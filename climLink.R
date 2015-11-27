@@ -7,6 +7,7 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(readxl)
 
 # Set work directory
 
@@ -16,6 +17,8 @@ setwd('/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA')
 # Read database
 
 baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/cosechas_suelo_foliarTest.csv')
+# baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
+baseManejo <- as.data.frame(baseManejo)
 
 # Load climate functions
 
@@ -29,8 +32,8 @@ setwd(climDir)
 
 # Read original climate files
 
-climFiles <- list.files(path=getwd(), full.names=TRUE)
-climOrder <- gsub(pattern='.txt', replacement='', x=list.files(path=getwd(), full.names=FALSE))
+climFiles <- list.files(path=getwd(), pattern='.txt$', full.names=TRUE)
+climOrder <- gsub(pattern='.txt$', replacement='', x=list.files(path=getwd(), pattern='.txt$', full.names=FALSE))
 
 baseClima <- unifDatos(climFiles=climFiles, namesC=climOrder)
 baseClima$FECHA <- as.Date(baseClima$FECHA, format='%Y-%m-%d')
@@ -47,13 +50,15 @@ rownames(baseManejo) <- 1:nrow(baseManejo)
 
 #CREAR INDICADORES CLIMATICOS POR FASE DEL CULTIVO
 
+length(baseClima$RAIN[which(baseClima$RAIN<=7)])
+
 # Indicar calculo de indicador climatico
-climVar <- c("mean(TMAX)","mean(TMIN)","mean((TMAX+TMIN)/2)","mean(TMAX-TMIN)","sum(TMAX >=35)/length(TMAX)",
-             "sum(RAIN)","sum(RAIN>=10)/length(RAIN)","mean(RHUM)","sum(ESOL)")
+climVar <- c("mean(TMAX)","mean(TMIN)","mean((TMAX+TMIN)/2)","mean(TMAX-TMIN)","sum(TMAX>34)/length(TMAX)","sum(TMIN<=20)/length(TMIN)",
+             "sum(RAIN)","sum(RAIN>=10)/length(RAIN)","sum(RAIN<=7)/length(RAIN)","mean(RHUM)","sum(ESOL)")
 
 # Indicar nombre de funcion
 namFun  <- c("TX_avg","TM_avg","T_avg","Diurnal_Range_avg",
-             "TX_freq_35","P_accu","P_10_freq","RH_avg", "SR_accu")
+             "TX_freq_34","TM_freq_20","P_accu","P_10_freq","P_inf7_freq","RH_avg", "SR_accu")
 
 periodBase     <- 267                              # Duracion total ciclo productivo      Default values: periodBase  <- 120
 FaseCultivo    <- c("LEAF","DIFF","FLOW","DEVL")   # Nombre corto por etapas de cultivo   Default values: FaseCultivo <- c("VEG","REP","LLEN")
@@ -65,4 +70,4 @@ a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
                              namFecha=namFec, climBase=baseClima)
 
 # ESCRIBIR LOS DATOS
-write.csv(data.frame(baseManejo,a),"indicadoresClimaticos.csv", row.names=FALSE)
+write.csv(data.frame(baseManejo,a),"indicadoresClimaticosCobana.csv", row.names=FALSE)

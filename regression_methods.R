@@ -37,12 +37,13 @@ setwd(dirFol)
 
 #DataBase structure
 
-dataSet <- read.csv('climateINDTest.csv')
+dataSet <- read.csv('indicadoresClimaticosCobana4model.csv')
+dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 dataSet$splitVar <- 'All'
 
-inputs  <- 1:73  # inputs columns
-segme   <- 75    # split column
-output  <- 74    # output column
+inputs  <- 1:44  # inputs columns
+segme   <- 46    # split column
+output  <- 45    # output column
 
 namsDataSet <- names(dataSet)
 
@@ -70,7 +71,7 @@ dataSetProces(variety, dataSet, segme, corRed="caret")
 multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Yield (Ton/Ha)", pertuRelevance=T, ncores=3) # All
 
 # RANDOM FOREST
-randomForestFun(variety, nb.it=30, ncores=23, wid=800, hei=1300) # All
+randomForestFun(variety, nb.it=30, ncores=23) # All
 
 # CONDITIONAL FOREST; especify if you have categorical variables
 conditionalForestFun(variety, nb.it=30, ncores=23) # All
