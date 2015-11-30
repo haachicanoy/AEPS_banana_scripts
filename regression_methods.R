@@ -38,7 +38,7 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('banasan_soil_foliar2analyse.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- read.csv('cobana2analyse_climate.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -47,28 +47,36 @@ dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSe
 
 names(dataSet) # With this command you can see all variable names in the original dataset
 # Following code shows the variables that are selected
-dataSet <- dataSet[,c('Cluster',                                                     # Cosecha
-                      'Arena_perc','Limo_perc','Arcilla_perc',                       # Suelo
-                      "pH","Soil_MO_perc",                                           # Suelo
-                      "Soil_P_ppm","Soil_S_ppm","Soil_K_meq.100g",                   # Suelo
-                      "Soil_Ca_meq.100g","Soil_Mg_meq.100g","Soil_Na_meq.100g",      # Suelo
-                      "Soil_Fe_meq.100g","Soil_Mn_meq.100g","Soil_Cu_meq.100g",      # Suelo
-                      "Soil_Zn_meq.100g","Soil_B_meq.100g","Soil_Perc_sat.K",        # Suelo
-                      "Soil_Perc_sat.Ca","Soil_Perc_sat.Mg","Soil_Perc_sat.Na",      # Suelo
-                      "Soil_Perc_sat.Al",                                            # Suelo
-                      "Foliar_N_perc","Foliar_P_perc","Foliar_K_perc",               # Foliar
-                      "Foliar_Ca_perc","Foliar_Mg_perc","Foliar_S_perc",             # Foliar
-                      "Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",        # Foliar
-                      "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1",       # Foliar
-                      "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
-                      "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
-                      'Merma')]
+dataSet <- dataSet[,c("IDFinca","Year","Week","Date",                                                   # ID finca
+                      "num_controls","molecula_activa_control","dosis_acum_control","duracion_control", # Controles
+                      "num_fertilizaciones","tipo_abono","tipo_aplicacion_fert",                        # Fertilizaciones
+                      "N_fert","P2O5_fert","K2O_fert","CaO_fert","MgO_fert",                            # Fertilizaciones
+                      "S_fert","B_fert","Zn_fert","Cu_fert","K2MgCa2.SO4.4H2O_fert",                    # Fertilizaciones
+                      "Gallinaza_fert","Fe_fert","Mn_fert","MO_fert","KCl_fert",                        # Fertilizaciones
+                      "Racimos_cosechar_area")]                           # Cosechas (,"Merma","Peso_racimo","Grado")
+# dataSet <- dataSet[,c('Cluster',                                                     # Cosecha
+#                       'Arena_perc','Limo_perc','Arcilla_perc',                       # Suelo
+#                       "pH","Soil_MO_perc",                                           # Suelo
+#                       "Soil_P_ppm","Soil_S_ppm","Soil_K_meq.100g",                   # Suelo
+#                       "Soil_Ca_meq.100g","Soil_Mg_meq.100g","Soil_Na_meq.100g",      # Suelo
+#                       "Soil_Fe_meq.100g","Soil_Mn_meq.100g","Soil_Cu_meq.100g",      # Suelo
+#                       "Soil_Zn_meq.100g","Soil_B_meq.100g","Soil_Perc_sat.K",        # Suelo
+#                       "Soil_Perc_sat.Ca","Soil_Perc_sat.Mg","Soil_Perc_sat.Na",      # Suelo
+#                       "Soil_Perc_sat.Al",                                            # Suelo
+#                       "Foliar_N_perc","Foliar_P_perc","Foliar_K_perc",               # Foliar
+#                       "Foliar_Ca_perc","Foliar_Mg_perc","Foliar_S_perc",             # Foliar
+#                       "Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",        # Foliar
+#                       "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1",       # Foliar
+#                       "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
+#                       "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
+#                       'Merma')]
+dataSet <- dataSet[,c(5:26, 37:80, 27)]
 
 dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
 
-inputs  <- 1:44  # inputs columns
-output  <- 45    # output column
-segme   <- 46    # split column; In case of exists variety variable USE IT HERE
+inputs  <- 1:66  # inputs columns
+output  <- 67    # output column
+segme   <- 68    # split column; In case of exists variety variable USE IT HERE
 
 namsDataSet <- names(dataSet)
 
