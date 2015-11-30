@@ -14,7 +14,7 @@ library(readxl)
 setwd('/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA')
 # setwd('//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA')
 
-# Read database
+# Read database (change according necesities)
 
 baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/cosechas_suelo_foliarTest.csv')
 # baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')

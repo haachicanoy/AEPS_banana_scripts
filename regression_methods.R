@@ -76,6 +76,25 @@ randomForestFun(variety, nb.it=30, ncores=23) # All
 # CONDITIONAL FOREST; especify if you have categorical variables
 conditionalForestFun(variety, nb.it=30, ncores=23) # All
 
+# GENERALIZED BOOSTED MODELS
+
+library(dismo)
+library(gbm)
+
+rest <- gbm.step(dataSet, gbm.x=1:44, gbm.y=45, tree.complexity=5, learning.rate=0.005, family="gaussian", n.trees=113)
+summary(rest)
+
+# Find interactions
+find.int <- gbm.interactions(rest)
+find.int$interactions
+find.int$rank.list
+
+# Plotting interactions
+par(mar=c(1,1,0.2,0.2))
+gbm.perspec(rest, y=4, x=38, y.range=range(dataSet[,4]), x.range=range(dataSet[,38]), z.range=c(44,55), y.label='Diurnal_Range_avg_LEAF', x.label='TX_freq_34_DEVL', z.label='Racimos cosechados por ha', col='forestgreen')
+gbm.perspec(rest, y=4, x=11, y.range=range(dataSet[,4]), x.range=range(dataSet[,11]), z.range=c(44,55), y.label='Diurnal_Range_avg_LEAF', x.label='SR_accu_LEAF', z.label='Racimos cosechados por ha', col='forestgreen')
+gbm.perspec(rest, y=4, x=10, y.range=range(dataSet[,4]), x.range=range(dataSet[,10]), z.range=c(44,55), y.label='Diurnal_Range_avg_LEAF', x.label='RH_avg_LEAF', z.label='Racimos cosechados por ha', col='forestgreen')
+
 # ----------------------------------------------------------------------------------------------------------------------------------------------------- #
 # Using only climate
 # ----------------------------------------------------------------------------------------------------------------------------------------------------- #
