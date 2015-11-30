@@ -1,21 +1,11 @@
-# file data-analysis-AEPS-BigData.R
-# 
-# This file contains a script to develop regressions with machine learning methodologies
-#
-#
-# author: Hugo Andres Dorado 02-16-2015
-#  
-#This script is free: you can redistribute it and/or modify
-#
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# Regression methods Banana case
+# H. Achicanoy & G. Calberto
+# CIAT, 2015
 
-#-----------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------- #
+# Load packages
+# ----------------------------------------------------------------------------------------------------------------- #
 
-
-#SCRIPT BUILED FOR R VERSION 3.0.2 
-#PACKAGES
 options(warn=-1)
 if(!require(gtools)){install.packages('gtools');library(gtools)} else{library(gtools)}
 if(!require(gridBase)){install.packages('gridBase');library(gridBase)} else{library(gridBase)}
@@ -28,275 +18,124 @@ if(!require(earth)){install.packages('earth');library(earth)} else{library(earth
 if(!require(reshape)){install.packages('reshape');library(reshape)} else{library(reshape)}
 if(!require(agricolae)){install.packages('agricolae');library(agricolae)} else{library(agricolae)}
 if(!require(stringr)){install.packages('stringr');library(stringr)} else{library(stringr)}
+if(!require(readxl)){install.packages('readxl');library(readxl)} else{library(readxl)}
+if(!require(raster)){install.packages('raster');library(raster)} else{library(raster)}
+if(!require(rgdal)){install.packages('rgdal');library(rgdal)} else{library(rgdal)}
+if(!require(maptools)){install.packages('maptools');library(maptools)} else{library(maptools)}
+if(!require(sp)){install.packages('sp');library(sp)} else{library(sp)}
+if(!require(dismo)){install.packages('dismo');library(dismo)} else{library(dismo)}
+if(!require(gbm)){install.packages('gbm');library(gbm)} else{library(gbm)}
 
-#Work Directory
+# ----------------------------------------------------------------------------------------------------------------- #
+# Set work directory
+# ----------------------------------------------------------------------------------------------------------------- #
 
-dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA/DATOS_PROCESADOS/_clima/IDEAM/Climate_to"
-# dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA/DATOS_PROCESADOS/_clima/IDEAM/Climate_to"
-setwd(dirFol)
+dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
+# dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
+wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 
-#DataBase structure
+# ----------------------------------------------------------------------------------------------------------------- #
+# Read database
+# ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('indicadoresClimaticosCobana4model.csv')
+dataSet <- read.csv('banasan_soil_foliar2analyse.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
-dataSet$splitVar <- 'All'
+
+# ----------------------------------------------------------------------------------------------------------------- #
+# Select variables to analyse from database
+# ----------------------------------------------------------------------------------------------------------------- #
+
+names(dataSet) # With this command you can see all variable names in the original dataset
+# Following code shows the variables that are selected
+dataSet <- dataSet[,c('Cluster',                                                     # Cosecha
+                      'Arena_perc','Limo_perc','Arcilla_perc',                       # Suelo
+                      "pH","Soil_MO_perc",                                           # Suelo
+                      "Soil_P_ppm","Soil_S_ppm","Soil_K_meq.100g",                   # Suelo
+                      "Soil_Ca_meq.100g","Soil_Mg_meq.100g","Soil_Na_meq.100g",      # Suelo
+                      "Soil_Fe_meq.100g","Soil_Mn_meq.100g","Soil_Cu_meq.100g",      # Suelo
+                      "Soil_Zn_meq.100g","Soil_B_meq.100g","Soil_Perc_sat.K",        # Suelo
+                      "Soil_Perc_sat.Ca","Soil_Perc_sat.Mg","Soil_Perc_sat.Na",      # Suelo
+                      "Soil_Perc_sat.Al",                                            # Suelo
+                      "Foliar_N_perc","Foliar_P_perc","Foliar_K_perc",               # Foliar
+                      "Foliar_Ca_perc","Foliar_Mg_perc","Foliar_S_perc",             # Foliar
+                      "Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",        # Foliar
+                      "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1",       # Foliar
+                      "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
+                      "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
+                      'Merma')]
+
+dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
 
 inputs  <- 1:44  # inputs columns
-segme   <- 46    # split column
 output  <- 45    # output column
+segme   <- 46    # split column; In case of exists variety variable USE IT HERE
 
 namsDataSet <- names(dataSet)
 
-#Creating the split factors
+# ----------------------------------------------------------------------------------------------------------------- #
+# Creating the split factors (in case of exists more than 1 variety run models for each variety)
+# ----------------------------------------------------------------------------------------------------------------- #
 
-contVariety <- table(dataSet[,segme])
-variety0    <- names(sort(contVariety[contVariety>=30]))
-
-if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
+wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_scripts', sep=''); setwd(wkDir)
 
 load('All-Functions-AEPS_BD.RData')
+contVariety <- table(dataSet[,segme])
+variety0    <- names(sort(contVariety[contVariety>=30]))
+if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
+variety <- 'All' # Omit this line in case of exists more than 1 variety
 
-variety <- 'All'
+wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_results', sep='')
+runID <- paste(wkDir, '/_run6_cobana_integrated', sep='')
+if(!dir.exists(runID)){cat('Creating run directory'); dir.create(runID)} else {cat('Run directory exists')}
+setwd(runID)
 
-#creating folders
+# ----------------------------------------------------------------------------------------------------------------- #
+# Creating folders
+# ----------------------------------------------------------------------------------------------------------------- #
+
 createFolders(dirFol, variety)
 
-#DataSets ProcesosF
+# ----------------------------------------------------------------------------------------------------------------- #
+# DataSets ProcesosF; parallelize processes usign caret R package
+# ----------------------------------------------------------------------------------------------------------------- #
+
 dataSetProces(variety, dataSet, segme, corRed="caret")
 
-# LINEAR REGRESSION; only when all inputs are cuantitative;  
-# lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Yield (Ton/Ha)")
+# ----------------------------------------------------------------------------------------------------------------- #
+# Run Linear model regression; only when all inputs are cuantitative
+# ----------------------------------------------------------------------------------------------------------------- #
 
-# MULTILAYER PERCEPTRON
-multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Yield (Ton/Ha)", pertuRelevance=T, ncores=3) # All
+lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Racimos a cosechar (Racimos/ha)")
 
-# RANDOM FOREST
-randomForestFun(variety, nb.it=30, ncores=23) # All
+# ----------------------------------------------------------------------------------------------------------------- #
+# Run Multilayer perceptron
+# ----------------------------------------------------------------------------------------------------------------- #
 
-# CONDITIONAL FOREST; especify if you have categorical variables
-conditionalForestFun(variety, nb.it=30, ncores=23) # All
+multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Racimos a cosechar (Racimos/ha)", pertuRelevance=T, ncores=3)
 
-# GENERALIZED BOOSTED MODELS
+# ----------------------------------------------------------------------------------------------------------------- #
+# Run Random Forest
+# ----------------------------------------------------------------------------------------------------------------- #
 
-library(dismo)
-library(gbm)
+randomForestFun(variety, nb.it=30, ncores=23)
 
-rest <- gbm.step(dataSet, gbm.x=1:44, gbm.y=45, tree.complexity=5, learning.rate=0.005, family="gaussian", n.trees=113)
-summary(rest)
+# ----------------------------------------------------------------------------------------------------------------- #
+# Run Conditional Forest; especify if you have categorical variables
+# ----------------------------------------------------------------------------------------------------------------- #
+
+conditionalForestFun(variety, nb.it=30, ncores=23)
+
+# ----------------------------------------------------------------------------------------------------------------- #
+# Run Generalized Boosted Models
+# ----------------------------------------------------------------------------------------------------------------- #
+
+rest <- gbm.step(dataSet, gbm.x=1:44, gbm.y=45, tree.complexity=5, learning.rate=0.005, family="gaussian", n.trees=113); summary(rest)
 
 # Find interactions
-find.int <- gbm.interactions(rest)
-find.int$interactions
-find.int$rank.list
+find.int <- gbm.interactions(rest); find.int$interactions; find.int$rank.list
 
 # Plotting interactions
 par(mar=c(1,1,0.2,0.2))
 gbm.perspec(rest, y=4, x=38, y.range=range(dataSet[,4]), x.range=range(dataSet[,38]), z.range=c(44,55), y.label='Diurnal_Range_avg_LEAF', x.label='TX_freq_34_DEVL', z.label='Racimos cosechados por ha', col='forestgreen')
 gbm.perspec(rest, y=4, x=11, y.range=range(dataSet[,4]), x.range=range(dataSet[,11]), z.range=c(44,55), y.label='Diurnal_Range_avg_LEAF', x.label='SR_accu_LEAF', z.label='Racimos cosechados por ha', col='forestgreen')
 gbm.perspec(rest, y=4, x=10, y.range=range(dataSet[,4]), x.range=range(dataSet[,10]), z.range=c(44,55), y.label='Diurnal_Range_avg_LEAF', x.label='RH_avg_LEAF', z.label='Racimos cosechados por ha', col='forestgreen')
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Using only climate
-# ----------------------------------------------------------------------------------------------------------------------------------------------------- #
-
-#SCRIPT BUILED FOR R VERSION 3.0.2 
-#PACKAGES
-options(warn=-1)
-if(!require(gtools)){install.packages('gtools');library(gtools)} else{library(gtools)}
-if(!require(gridBase)){install.packages('gridBase');library(gridBase)} else{library(gridBase)}
-if(!require(relaimpo)){install.packages('relaimpo');library(relaimpo)} else{library(relaimpo)}
-if(!require(caret)){install.packages('caret');library(caret)} else{library(caret)}
-if(!require(party)){install.packages('party');library(party)} else{library(party)}
-if(!require(randomForest)){install.packages('randomForest');library(randomForest)} else{library(randomForest)}
-if(!require(snowfall)){install.packages('snowfall');library(snowfall)} else{library(snowfall)}
-if(!require(earth)){install.packages('earth');library(earth)} else{library(earth)}
-
-#Work Directory
-
-dirFol  <- "D:/ToBackup/AEPS-Big_data/Flagship_arroz_Peru/arroz_jaen/Analisis/_climate_ts/"
-# dirFol  <- "/home/hachicanoy/jaen_analysis/"
-setwd(dirFol)
-
-data2 <- read.csv('./only_climate.csv', row.names=1)
-
-#DataBase structure
-
-data2$splitVar <- 'All'
-data2 <- data2[,c('variedad',"TX_avg_ALL","TM_avg_ALL","T_avg_ALL","Diurnal_Range_avg_ALL","TX_freq_35_ALL","P_accu_ALL","P_10_freq_ALL","RH_avg_ALL",'splitVar','RDT')]
-data2$tipoSiembra <- as.factor(data2$tipoSiembra)
-data2$variedad <- as.factor(data2$variedad)
-data2$splitVar <- as.factor(data2$splitVar)
-
-inputs  <- 1:10  # inputs columns
-segme   <- 10    # split column
-output  <- 11    # output column
-
-dataSet   <- data2
-namsDataSet <- names(dataSet)
-
-#Creating the split factors
-
-contVariety <- table(dataSet[,segme])
-variety0    <- names(sort(contVariety[contVariety>=30]))
-
-if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
-
-#creating folders
-
-# load('/home/hachicanoy/jaen_analysis/All-Functions-AEPS_BD.RData')
-load("/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/OPEN_BIGDATA_AEPS/REGRESSION_MODELS/All-Functions-AEPS_BD.RData")
-variety <- 'All'
-
-createFolders(dirFol, variety)
-
-#DataSets ProcesosF
-dataSetProces(variety=variety, dataSet=dataSet, segme=segme, corRed="caret")
-
-# LINEAR REGRESSION; only when all inputs are cuantitative;  
-# lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Yield (Ton/Ha)")
-
-# MULTILAYER PERCEPTRON
-multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Yield (Ton/Ha)", pertuRelevance=T, ncores=3) # All
-
-# RANDOM FOREST
-randomForestFun(variety, nb.it=30, ncores=23) # All
-
-# CONDITIONAL FOREST; especify if you have categorical variables
-conditionalForestFun(variety, nb.it=30, ncores=23) # All
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Using both climate and soils
-# ----------------------------------------------------------------------------------------------------------------------------------------------------- #
-
-#SCRIPT BUILED FOR R VERSION 3.0.2 
-#PACKAGES
-options(warn=-1)
-if(!require(gtools)){install.packages('gtools');library(gtools)} else{library(gtools)}
-if(!require(gridBase)){install.packages('gridBase');library(gridBase)} else{library(gridBase)}
-if(!require(relaimpo)){install.packages('relaimpo');library(relaimpo)} else{library(relaimpo)}
-if(!require(caret)){install.packages('caret');library(caret)} else{library(caret)}
-if(!require(party)){install.packages('party');library(party)} else{library(party)}
-if(!require(randomForest)){install.packages('randomForest');library(randomForest)} else{library(randomForest)}
-if(!require(snowfall)){install.packages('snowfall');library(snowfall)} else{library(snowfall)}
-if(!require(earth)){install.packages('earth');library(earth)} else{library(earth)}
-
-#Work Directory
-
-dirFol  <- "D:/ToBackup/AEPS-Big_data/Flagship_arroz_Peru/arroz_jaen/Analisis/_climate_ts/"
-# dirFol  <- "/home/hachicanoy/jaen_analysis/"
-setwd(dirFol)
-
-data2 <- read.csv('./all_soil_climate.csv', row.names=1)
-
-#DataBase structure
-
-data2$splitVar <- 'All'
-data2 <- data2[,c('variedad',"CE","pH","arena","arcilla","limo","matOrganica","P_disponible","K_disponible","CIC","CaCO3","TX_avg_ALL","TM_avg_ALL","T_avg_ALL","Diurnal_Range_avg_ALL","TX_freq_35_ALL","P_accu_ALL","P_10_freq_ALL","RH_avg_ALL",'splitVar','RDT')]
-data2$variedad <- as.factor(data2$variedad)
-data2$splitVar <- as.factor(data2$splitVar)
-
-inputs  <- 1:19  # inputs columns
-segme   <- 20    # split column
-output  <- 21    # output column
-
-dataSet   <- data2
-namsDataSet <- names(dataSet)
-
-#Creating the split factors
-
-contVariety <- table(dataSet[,segme])
-variety0    <- names(sort(contVariety[contVariety>=30]))
-
-if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
-
-#creating folders
-
-# load('/home/hachicanoy/jaen_analysis/All-Functions-AEPS_BD.RData')
-load("/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/OPEN_BIGDATA_AEPS/REGRESSION_MODELS/All-Functions-AEPS_BD.RData")
-variety <- 'All'
-
-createFolders(dirFol, variety)
-
-#DataSets ProcesosF
-dataSetProces(variety=variety, dataSet=dataSet, segme=segme, corRed="caret")
-
-# LINEAR REGRESSION; only when all inputs are cuantitative;  
-# lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Yield (Ton/Ha)")
-
-# MULTILAYER PERCEPTRON
-multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Yield (Ton/Ha)", pertuRelevance=T, ncores=3) # All
-
-# RANDOM FOREST
-randomForestFun(variety, nb.it=30, ncores=3) # All
-
-# CONDITIONAL FOREST; especify if you have categorical variables
-conditionalForestFun(variety, nb.it=30, ncores=23) # All
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Using only soils
-# ----------------------------------------------------------------------------------------------------------------------------------------------------- #
-
-#SCRIPT BUILED FOR R VERSION 3.0.2 
-#PACKAGES
-options(warn=-1)
-if(!require(gtools)){install.packages('gtools');library(gtools)} else{library(gtools)}
-if(!require(gridBase)){install.packages('gridBase');library(gridBase)} else{library(gridBase)}
-if(!require(relaimpo)){install.packages('relaimpo');library(relaimpo)} else{library(relaimpo)}
-if(!require(caret)){install.packages('caret');library(caret)} else{library(caret)}
-if(!require(party)){install.packages('party');library(party)} else{library(party)}
-if(!require(randomForest)){install.packages('randomForest');library(randomForest)} else{library(randomForest)}
-if(!require(snowfall)){install.packages('snowfall');library(snowfall)} else{library(snowfall)}
-if(!require(earth)){install.packages('earth');library(earth)} else{library(earth)}
-
-#Work Directory
-
-dirFol  <- "D:/ToBackup/AEPS-Big_data/Flagship_arroz_Peru/arroz_jaen/Analisis/_climate_ts/"
-# dirFol  <- "/home/hachicanoy/jaen_analysis/"
-setwd(dirFol)
-
-data2 <- read.csv('./only_soil.csv')
-
-#DataBase structure
-
-data2$splitVar <- 'All'
-data2 <- data2[,c('tipoSiembra','variedad',"CE","pH","arena","arcilla","limo","matOrganica","P_disponible","K_disponible","CIC","CaCO3",'splitVar','RDT')]
-data2$tipoSiembra <- as.factor(data2$tipoSiembra)
-data2$variedad <- as.factor(data2$variedad)
-data2$splitVar <- as.factor(data2$splitVar)
-
-inputs  <- 1:12  # inputs columns
-segme   <- 13    # split column
-output  <- 14    # output column
-
-dataSet   <- data2
-namsDataSet <- names(dataSet)
-
-#Creating the split factors
-
-contVariety <- table(dataSet[,segme])
-variety0    <- names(sort(contVariety[contVariety>=30]))
-
-if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
-
-#creating folders
-
-# load('/home/hachicanoy/jaen_analysis/All-Functions-AEPS_BD.RData')
-load("/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/OPEN_BIGDATA_AEPS/REGRESSION_MODELS/All-Functions-AEPS_BD.RData")
-variety <- 'All'
-
-createFolders(dirFol, variety)
-
-#DataSets ProcesosF
-dataSetProces(variety=variety, dataSet=dataSet, segme=segme, corRed="caret")
-
-# LINEAR REGRESSION; only when all inputs are cuantitative;  
-# lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Yield (Ton/Ha)")
-
-# MULTILAYER PERCEPTRON
-multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Yield (Ton/Ha)", pertuRelevance=T, ncores=3) # All
-
-# RANDOM FOREST
-randomForestFun(variety, nb.it=30, ncores=3) # All
-
-# CONDITIONAL FOREST; especify if you have categorical variables
-conditionalForestFun(variety, nb.it=30, ncores=23) # All
