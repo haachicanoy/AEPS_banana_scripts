@@ -38,7 +38,7 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('cobana2analyse_climate.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- read.csv('cobana_control_fert_mon2analyse_filtered_complete_climate.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -70,13 +70,13 @@ dataSet <- dataSet[,c("IDFinca","Year","Week","Date",                           
 #                       "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
 #                       "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
 #                       'Merma')]
-dataSet <- dataSet[,c(5:26, 37:80, 30)]
+dataSet <- dataSet[,c(22, 25:41, 48:91, 8)]
 
 dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
 
-inputs  <- 1:66  # inputs columns
-output  <- 67    # output column
-segme   <- 68    # split column; In case of exists variety variable USE IT HERE
+inputs  <- 1:62  # inputs columns
+output  <- 63    # output column
+segme   <- 64    # split column; In case of exists variety variable USE IT HERE
 
 namsDataSet <- names(dataSet)
 
@@ -93,7 +93,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_results', sep='')
-runID <- paste(wkDir, '/_run7_cobana_peso_racimo_integrated', sep='')
+runID <- paste(wkDir, '/_run8_cobana_racimos_cosechados_fert_cont_clim', sep='')
 if(!dir.exists(runID)){cat('Creating run directory'); dir.create(runID)} else {cat('Run directory exists')}
 setwd(runID)
 
@@ -137,7 +137,7 @@ conditionalForestFun(variety, nb.it=30, ncores=23)
 # Run Generalized Boosted Models
 # ----------------------------------------------------------------------------------------------------------------- #
 
-rest <- gbm.step(dataSet, gbm.x=1:66, gbm.y=67, tree.complexity=5, learning.rate=0.005, family="gaussian", n.trees=113); summary(rest)
+rest <- gbm.step(dataSet, gbm.x=1:64, gbm.y=65, tree.complexity=5, learning.rate=0.001, family="gaussian", n.trees=113); summary(rest)
 
 # Find interactions
 find.int <- gbm.interactions(rest); find.int$interactions; find.int$rank.list

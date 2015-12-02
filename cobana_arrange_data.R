@@ -194,6 +194,27 @@ names(controles)[grep2(pattern=c('Year_control', 'Week_control'),names(controles
 fertilizaciones$Date <- paste(fertilizaciones$Year, fertilizaciones$Week, sep='-')
 x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
 x <- x[match(fertilizaciones$Date, format(x, "%Y-%U"))]
+fertilizaciones$Date <- x
+fertilizaciones <- fertilizaciones[which(!is.na(fertilizaciones$Date)),]
+rm(x)
+
+# Create a dummy date for controles database
+controles$Date <- paste(controles$Year, controles$Week, sep='-')
+x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
+x <- x[match(controles$Date, format(x, "%Y-%U"))]
+controles$Date <- x
+controles <- controles[which(!is.na(controles$Date)),]
+rm(x)
+
+# Move to harvest date
+fertilizaciones$Date <- fertilizaciones$Date + 78 # Flowering step
+controles$Date <- controles$Date + 113 # Floral differentiation
+
+fertilizaciones$Week <- as.numeric(format(fertilizaciones$Date+3, "%U"))
+controles$Week <- as.numeric(format(controles$Date+3, "%U"))
+
+fertilizaciones$Year <- as.numeric(format(fertilizaciones$Date,'%Y'))
+controles$Year <- as.numeric(format(controles$Date,'%Y'))
 
 # Make merge between cosechas, controles, fertilizaciones y monitoreos
 cosechasFinal <- base::merge(x=cosechas, y=controles, by=c('IDFinca','Year','Week'), all.x=TRUE)
@@ -204,12 +225,6 @@ cosechasFinal$Date <- paste(cosechasFinal$Year, cosechasFinal$Week, sep='-')
 x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
 x <- x[match(cosechasFinal$Date, format(x, "%Y-%U"))]
 cosechasFinal$Date <- x; rm(x)
-
-# Create a dummy date for siembras database
-siembras$Date <- paste(siembras$Year, siembras$Week, sep='-')
-x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
-x <- x[match(siembras$Date, format(x, "%Y-%U"))]
-siembras$Date <- x; rm(x) # Check siembras$Date + 267
 
 cosechasFinal <- cosechasFinal[which(!is.na(cosechasFinal$Date)),]
 rownames(cosechasFinal) <- 1:nrow(cosechasFinal)

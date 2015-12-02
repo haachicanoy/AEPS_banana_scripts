@@ -24,7 +24,7 @@ wkDir <- paste(dirFol); setwd(wkDir)
 # Read database (change according necesities)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/cobana2analyse.csv')
+baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/cobana_control_fert_mon2analyse_filtered_complete.csv')
 # baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 baseManejo <- as.data.frame(baseManejo)
 
@@ -90,4 +90,4 @@ a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
 # ----------------------------------------------------------------------------------------------------------------- #
 
 wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
-write.csv(data.frame(baseManejo,a),"cobana2analyse_climate.csv", row.names=FALSE)
+write.csv(data.frame(baseManejo,a),"cobana_control_fert_mon2analyse_filtered_complete_climate.csv", row.names=FALSE)
