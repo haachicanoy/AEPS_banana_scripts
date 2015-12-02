@@ -53,7 +53,7 @@ dataSet <- dataSet[,c("IDFinca","Year","Week","Date",                           
                       "N_fert","P2O5_fert","K2O_fert","CaO_fert","MgO_fert",                            # Fertilizaciones
                       "S_fert","B_fert","Zn_fert","Cu_fert","K2MgCa2.SO4.4H2O_fert",                    # Fertilizaciones
                       "Gallinaza_fert","Fe_fert","Mn_fert","MO_fert","KCl_fert",                        # Fertilizaciones
-                      "Racimos_cosechar_area")]                           # Cosechas (,"Merma","Peso_racimo","Grado")
+                      "Peso_racimo")]                           # Cosechas ("Racimos_cosechar_area","Merma","Peso_racimo","Grado")
 # dataSet <- dataSet[,c('Cluster',                                                     # Cosecha
 #                       'Arena_perc','Limo_perc','Arcilla_perc',                       # Suelo
 #                       "pH","Soil_MO_perc",                                           # Suelo
@@ -70,7 +70,7 @@ dataSet <- dataSet[,c("IDFinca","Year","Week","Date",                           
 #                       "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
 #                       "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
 #                       'Merma')]
-dataSet <- dataSet[,c(5:26, 37:80, 27)]
+dataSet <- dataSet[,c(5:26, 37:80, 30)]
 
 dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
 
@@ -93,7 +93,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_results', sep='')
-runID <- paste(wkDir, '/_run6_cobana_integrated', sep='')
+runID <- paste(wkDir, '/_run7_cobana_peso_racimo_integrated', sep='')
 if(!dir.exists(runID)){cat('Creating run directory'); dir.create(runID)} else {cat('Run directory exists')}
 setwd(runID)
 
@@ -137,7 +137,7 @@ conditionalForestFun(variety, nb.it=30, ncores=23)
 # Run Generalized Boosted Models
 # ----------------------------------------------------------------------------------------------------------------- #
 
-rest <- gbm.step(dataSet, gbm.x=1:44, gbm.y=45, tree.complexity=5, learning.rate=0.005, family="gaussian", n.trees=113); summary(rest)
+rest <- gbm.step(dataSet, gbm.x=1:66, gbm.y=67, tree.complexity=5, learning.rate=0.005, family="gaussian", n.trees=113); summary(rest)
 
 # Find interactions
 find.int <- gbm.interactions(rest); find.int$interactions; find.int$rank.list

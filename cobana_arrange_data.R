@@ -178,8 +178,8 @@ setwd(dirFol)
 cosechas        <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 siembras        <- read.csv('./DATOS_PROCESADOS/_siembras/cobana_siembras.csv'); siembras$Month_establish <- NULL
 fertilizaciones <- read.csv('./DATOS_PROCESADOS/_fertilizaciones/cobana_fertilizaciones.csv'); fertilizaciones$Month_fertilizacion <- NULL
-monitoreos      <- read.csv('./DATOS_PROCESADOS/_monitoreos/cobana_monitoreos.csv'); monitoreos$Month_monitoreo <- NULL
 controles       <- read.csv('./DATOS_PROCESADOS/_controles/cobana_controles.csv'); controles$Month_control <- NULL
+# monitoreos      <- read.csv('./DATOS_PROCESADOS/_monitoreos/cobana_monitoreos.csv'); monitoreos$Month_monitoreo <- NULL
 # suelo           <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Suelo')
 
 grep2 <- function(pattern, x){grep(pattern, x)}
@@ -188,13 +188,16 @@ grep2 <- Vectorize(FUN=grep2, vectorize.args='pattern')
 names(cosechas)[grep2(pattern=c('Year_cosecha', 'Semana_cosecha'),names(cosechas))] <- c('Year','Week')
 names(siembras)[grep2(pattern=c('Year_establish', 'Week_establish'),names(siembras))] <- c('Year','Week')
 names(fertilizaciones)[grep2(pattern=c('Year_application', 'Week_fertilizacion'),names(fertilizaciones))] <- c('Year','Week')
-names(monitoreos)[grep2(pattern=c('Year_monitoreo', 'Week_monitoreo'),names(monitoreos))] <- c('Year','Week')
 names(controles)[grep2(pattern=c('Year_control', 'Week_control'),names(controles))] <- c('Year','Week')
+
+# Create a dummy date for fertilizaciones database
+fertilizaciones$Date <- paste(fertilizaciones$Year, fertilizaciones$Week, sep='-')
+x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
+x <- x[match(fertilizaciones$Date, format(x, "%Y-%U"))]
 
 # Make merge between cosechas, controles, fertilizaciones y monitoreos
 cosechasFinal <- base::merge(x=cosechas, y=controles, by=c('IDFinca','Year','Week'), all.x=TRUE)
 cosechasFinal <- base::merge(x=cosechasFinal, y=fertilizaciones, by=c('IDFinca','Year','Week'), all.x=TRUE)
-cosechasFinal <- base::merge(x=cosechasFinal, y=monitoreos, by=c('IDFinca','Year','Week'), all.x=TRUE)
 
 # Create a dummy date for cosechas database
 cosechasFinal$Date <- paste(cosechasFinal$Year, cosechasFinal$Week, sep='-')
