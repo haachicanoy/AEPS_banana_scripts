@@ -32,13 +32,13 @@ if(!require(gbm)){install.packages('gbm');library(gbm)} else{library(gbm)}
 
 dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
 # dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
-wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
+wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_SOCIALIZACION', sep=''); setwd(wkDir)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('cobana_control_fert_mon2analyse_filtered_complete_climate.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- read.csv('all_cajas_ha_climate.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 
 # ----------------------------------------------------------------------------------------------------------------- #
