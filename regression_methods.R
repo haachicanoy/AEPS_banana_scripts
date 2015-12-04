@@ -25,6 +25,7 @@ if(!require(maptools)){install.packages('maptools');library(maptools)} else{libr
 if(!require(sp)){install.packages('sp');library(sp)} else{library(sp)}
 if(!require(dismo)){install.packages('dismo');library(dismo)} else{library(dismo)}
 if(!require(gbm)){install.packages('gbm');library(gbm)} else{library(gbm)}
+if(!require(cowplot)){install.packages('cowplot');library(cowplot)} else{library(cowplot)}
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Set work directory
@@ -131,7 +132,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=30, ncores=10)
+randomForestFun(variety, nb.it=30, ncores=4)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
@@ -143,7 +144,7 @@ conditionalForestFun(variety, nb.it=30, ncores=23)
 # Run Generalized Boosted Models
 # ----------------------------------------------------------------------------------------------------------------- #
 
-rest <- gbm.step(dataSet, gbm.x=1:64, gbm.y=65, tree.complexity=5, learning.rate=0.001, family="gaussian", n.trees=113); summary(rest)
+rest <- gbm.step(dataSet, gbm.x=1:64, gbm.y=65, tree.complexity=5, learning.rate=0.05, family="gaussian", n.trees=113); summary(rest)
 
 # Find interactions
 find.int <- gbm.interactions(rest); find.int$interactions; find.int$rank.list
