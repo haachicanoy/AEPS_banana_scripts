@@ -78,8 +78,8 @@ namFun  <- c("TX_avg","TM_avg","T_avg","Diurnal_Range_avg","TX_freq_34","TM_freq
              "P_accu","P_10_freq","P_inf7_freq","RH_avg", "SR_accu")
 
 periodBase     <- 267                              # Duracion total ciclo productivo      Default values: periodBase  <- 120
-FaseCultivo    <- c("LEAF","DIFF","FLOW","DEVL")   # Nombre corto por etapas de cultivo   Default values: FaseCultivo <- c("VEG","REP","LLEN")
-diasPorFase    <- c(105, 49, 35, 78)               # Dias de cada etapa                   Default values: diasPorFase <- <- c(48,41,31)
+FaseCultivo    <- c("DIFF","FLOW","DEVL")   # Nombre corto por etapas de cultivo   Default values: FaseCultivo <- c("VEG","REP","LLEN")
+diasPorFase    <- c(154, 35, 78)               # Dias de cada etapa                   Default values: diasPorFase <- <- c(48,41,31)
 namFec         <- c("fechaSiembra","fechaCosecha") # Nombres de la fecha de siembra       Default values: namFec <- c("fecha_siembra","fecha_cosecha")
 
 a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
