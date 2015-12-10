@@ -75,7 +75,7 @@ lapply(1:length(years), function(i)
 # LOAD Soil data
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
 
-soil_data <- read_excel('./DATOS_PROCESADOS/Banasan_data.xlsx', sheet='Suelo')
+soil_data <- read_excel('./DATOS_PROCESADOS/Banasan_data_GC.xlsx', sheet='Suelo')
 summary(soil_data)
 
 varNames <- names(soil_data)[7:length(names(soil_data))]
@@ -87,7 +87,7 @@ lapply(1:length(varNames), function(i)
 {
   library(ggplot2)
   eval(parse(text=paste('p <- ggplot(data=soil_data, aes(x=',varNames[i],')) + geom_density(colour="darkgreen", fill="darkgreen")',sep='')))
-  p <- p + facet_grid(Año_muestreo~Id_Finca)
+  p <- p + facet_grid(Year_muestreo~Id_Finca)
   p <- p + theme_minimal() + theme_bw()
   p <- p + theme(axis.text.x = element_text(size=10),
                  axis.text.y = element_text(size=10),
@@ -105,7 +105,7 @@ g = gc(); rm(list=ls())
 # CALCULATE Lote raw
 soil_data$Id_Lote_raw <- substr(soil_data$Id_Lote, start=5, stop=nchar(soil_data$Id_Lote))
 soil_data <- soil_data[,c("Id_Lote", "Id_Finca", "Id_Lote_raw", 
-                          "Año_muestreo", "Mes_muestreo", "Dia.semana_muestreo", "Codigo_muestra",
+                          "Year_muestreo", "Mes_muestreo", "Dia.semana_muestreo", "Codigo_muestra",
                           "Arena_perc", "Limo_perc", "Arcilla_perc", "Textura", "pH",
                           "Acidez_intercambiable_meq.100g", "Soil_MO_perc", "Soil_P_ppm",
                           "Soil_S_ppm", "Soil_K_meq.100g", "Soil_Ca_meq.100g", "Soil_Mg_meq.100g",
@@ -161,26 +161,49 @@ g = gc(); rm(list=ls())
 
 soil_data <- read.csv('./RESULTADOS/Identificacion_factores_limitantes/Soils_analysis/soil_data_by_plot.csv')
 
-# Mode function
+library(modeest)
 Mode <- function(x) {
-  ux <- unique(x)
-  ux <- as.vector(na.omit(ux))
-  ux[which.max(tabulate(match(x, ux)))]
+  if(sum(!is.na(x))>0){
+    m <- asselin(x, na.rm=TRUE)
+    return(m)
+  } else {
+    m <- NA
+    return(m)
+  }
+}
+
+# Mode function
+Mode2 <- function(x) {
+ ux <- unique(x)
+ ux <- as.vector(na.omit(ux))
+ ux[which.max(tabulate(match(x, ux)))]
 }
 
 library(ks)
 # Calculate modal soil by year
-years <- unique(soil_data$Año_muestreo)
+years <- unique(soil_data$Year_muestreo)
 mode_by_year <- lapply(1:length(years), function(i)
 {
-  sub_soil <- subset(soil_data, subset=soil_data$Año_muestreo==years[i]); rownames(sub_soil) <- 1:nrow(sub_soil)
-  mode_calculated <- apply(sub_soil, 2, Mode)
+  sub_soil <- subset(soil_data, subset=soil_data$Year_muestreo==years[i]); rownames(sub_soil) <- 1:nrow(sub_soil)
+  sub_soil <- sub_soil[,c('Year_muestreo','Arena_perc','Limo_perc','Arcilla_perc','pH',
+                          'Acidez_intercambiable_meq.100g','Soil_MO_perc','Soil_P_ppm','Soil_S_ppm',
+                          'Soil_K_meq.100g','Soil_Ca_meq.100g','Soil_Mg_meq.100g','Soil_Na_meq.100g',
+                          'Soil_Fe_meq.100g','Soil_Mn_meq.100g','Soil_Cu_meq.100g','Soil_Zn_meq.100g','Soil_B_meq.100g',
+                          'Soil_Perc_sat.K','Soil_Perc_sat.Ca','Soil_Perc_sat.Mg','Soil_Perc_sat.Na','Soil_Perc_sat.Al')]
+  # mode_calculated <- apply(sub_soil, 2, Mode)
+  mode_calculated <- unlist(lapply(1:ncol(sub_soil), function(i)
+  {
+    tryCatch(expr={
+      mode_calc <- Mode(sub_soil[,i])
+    },
+    error=function(e){
+      cat("Assalin process failed to:", names(sub_soil)[i], ", using traditional method\n")
+      mode_calc <- Mode2(sub_soil[,i])
+      return(mode_calc)
+    })
+  }))
   mode_calculated <- as.data.frame(t(mode_calculated))
-  mode_calculated <- mode_calculated[,c('Año_muestreo','Arena_perc','Limo_perc','Arcilla_perc','Textura','pH',
-                                        'Acidez_intercambiable_meq.100g','Soil_MO_perc','Soil_P_ppm','Soil_S_ppm',
-                                        'Soil_K_meq.100g','Soil_Ca_meq.100g','Soil_Mg_meq.100g','Soil_Na_meq.100g',
-                                        'Soil_Fe_meq.100g','Soil_Mn_meq.100g','Soil_Cu_meq.100g','Soil_Zn_meq.100g','Soil_B_meq.100g',
-                                        'Soil_Perc_sat.K','Soil_Perc_sat.Ca','Soil_Perc_sat.Mg','Soil_Perc_sat.Na','Soil_Perc_sat.Al')]
+  colnames(mode_calculated) <- names(sub_soil)
   
   # Modal texture
   texture <- as.matrix(sub_soil[,c('Arena_perc','Limo_perc')])
@@ -200,7 +223,7 @@ mode_by_year <- lapply(1:length(years), function(i)
     values <- as.numeric(c(rownames(kernelMatrix)[values[1]], colnames(kernelMatrix)[values[2]]))
     values[3] <- 100-sum(values)
     mode_calculated[,c('Arena_perc','Limo_perc','Arcilla_perc')] <- as.factor(values)
-    mode_calculated <- mode_calculated[,c('Año_muestreo','Arena_perc','Limo_perc','Arcilla_perc','Textura','pH',
+    mode_calculated <- mode_calculated[,c('Year_muestreo','Arena_perc','Limo_perc','Arcilla_perc','pH',
                                           'Acidez_intercambiable_meq.100g','Soil_MO_perc','Soil_P_ppm','Soil_S_ppm',
                                           'Soil_K_meq.100g','Soil_Ca_meq.100g','Soil_Mg_meq.100g','Soil_Na_meq.100g',
                                           'Soil_Fe_meq.100g','Soil_Mn_meq.100g','Soil_Cu_meq.100g','Soil_Zn_meq.100g','Soil_B_meq.100g',
@@ -221,26 +244,52 @@ rm(mode_by_year)
 
 soil_data <- read.csv('./RESULTADOS/Identificacion_factores_limitantes/Soils_analysis/soil_data_by_plot.csv')
 
-# Mode function
+library(modeest)
 Mode <- function(x) {
+  if(sum(!is.na(x))>0){
+    m <- asselin(x, na.rm=TRUE)
+    return(m)
+  } else {
+    m <- NA
+    return(m)
+  }
+}
+
+# Mode function
+Mode2 <- function(x) {
   ux <- unique(x)
   ux <- as.vector(na.omit(ux))
   ux[which.max(tabulate(match(x, ux)))]
 }
 
 # Calculate modal soil by year and farm
-years <- unique(soil_data$Año_muestreo)
+years <- unique(soil_data$Year_muestreo)
 farms <- sort(as.character(unique(soil_data$Id_Finca)))
 mode_by_year_farm <- lapply(1:length(years), function(i)
 {
   year_results <- lapply(1:length(farms), function(j)
   {
-    sub_soil <- subset(soil_data, subset=(soil_data$Año_muestreo==years[i] & soil_data$Id_Finca==farms[j]))
+    sub_soil <- subset(soil_data, subset=(soil_data$Year_muestreo==years[i] & soil_data$Id_Finca==farms[j]))
     if(nrow(sub_soil)>0){
-      
+      sub_soil <- sub_soil[,c('Year_muestreo','Id_Finca','Arena_perc','Limo_perc','Arcilla_perc','pH',
+                              'Acidez_intercambiable_meq.100g','Soil_MO_perc','Soil_P_ppm','Soil_S_ppm',
+                              'Soil_K_meq.100g','Soil_Ca_meq.100g','Soil_Mg_meq.100g','Soil_Na_meq.100g',
+                              'Soil_Fe_meq.100g','Soil_Mn_meq.100g','Soil_Cu_meq.100g','Soil_Zn_meq.100g','Soil_B_meq.100g',
+                              'Soil_Perc_sat.K','Soil_Perc_sat.Ca','Soil_Perc_sat.Mg','Soil_Perc_sat.Na','Soil_Perc_sat.Al')]
       rownames(sub_soil) <- 1:nrow(sub_soil)
-      mode_calculated <- apply(sub_soil, 2, Mode)
+      mode_calculated <- unlist(lapply(1:ncol(sub_soil), function(i)
+      {
+        tryCatch(expr={
+          mode_calc <- Mode(sub_soil[,i])
+        },
+        error=function(e){
+          cat("Assalin process failed to:", names(sub_soil)[i], ", using traditional method\n")
+          mode_calc <- Mode2(sub_soil[,i])
+          return(mode_calc)
+        })
+      }))
       mode_calculated <- as.data.frame(t(mode_calculated))
+      colnames(mode_calculated) <- names(sub_soil)
       
       # Modal texture
       texture <- as.matrix(sub_soil[,c('Arena_perc','Limo_perc')])
@@ -261,36 +310,36 @@ mode_by_year_farm <- lapply(1:length(years), function(i)
         values <- as.numeric(c(rownames(kernelMatrix)[values[1]], colnames(kernelMatrix)[values[2]]))
         values[3] <- 100-sum(values)
         mode_calculated[,c('Arena_perc','Limo_perc','Arcilla_perc')] <- as.factor(values)
-        mode_calculated <- mode_calculated[,c("Id_Finca","Año_muestreo","Arena_perc","Limo_perc","Arcilla_perc","Textura","pH",
+        mode_calculated <- mode_calculated[,c("Id_Finca","Year_muestreo","Arena_perc","Limo_perc","Arcilla_perc","pH",
                                               "Acidez_intercambiable_meq.100g","Soil_MO_perc","Soil_P_ppm","Soil_S_ppm",
                                               "Soil_K_meq.100g","Soil_Ca_meq.100g","Soil_Mg_meq.100g","Soil_Na_meq.100g",
                                               "Soil_Fe_meq.100g","Soil_Mn_meq.100g","Soil_Cu_meq.100g","Soil_Zn_meq.100g",
                                               "Soil_B_meq.100g","Soil_Perc_sat.K","Soil_Perc_sat.Ca","Soil_Perc_sat.Mg",
                                               "Soil_Perc_sat.Na","Soil_Perc_sat.Al")]
-        mode_calculated[,c('Id_Finca','Año_muestreo')] <- as.factor(c(farms[j], years[i]))
+        mode_calculated[,c('Id_Finca','Year_muestreo')] <- as.factor(c(farms[j], years[i]))
         return(mode_calculated)
       } else {
         cat('Missing values exist\n')
       }
-      mode_calculated <- mode_calculated[,c("Id_Finca","Año_muestreo","Arena_perc","Limo_perc","Arcilla_perc","Textura","pH",
+      mode_calculated <- mode_calculated[,c("Id_Finca","Year_muestreo","Arena_perc","Limo_perc","Arcilla_perc","pH",
                                             "Acidez_intercambiable_meq.100g","Soil_MO_perc","Soil_P_ppm","Soil_S_ppm",
                                             "Soil_K_meq.100g","Soil_Ca_meq.100g","Soil_Mg_meq.100g","Soil_Na_meq.100g",
                                             "Soil_Fe_meq.100g","Soil_Mn_meq.100g","Soil_Cu_meq.100g","Soil_Zn_meq.100g",
                                             "Soil_B_meq.100g","Soil_Perc_sat.K","Soil_Perc_sat.Ca","Soil_Perc_sat.Mg",
                                             "Soil_Perc_sat.Na","Soil_Perc_sat.Al")]
-      mode_calculated[,c('Id_Finca','Año_muestreo')] <- as.factor(c(farms[j], years[i]))
+      mode_calculated[,c('Id_Finca','Year_muestreo')] <- as.factor(c(farms[j], years[i]))
       return(mode_calculated)
     } else {
       cat('Farm and year combination does not exists, NA values will be return\n')
       mode_calculated <- soil_data[1,]
-      mode_calculated <- mode_calculated[,c("Id_Finca","Año_muestreo","Arena_perc","Limo_perc","Arcilla_perc","Textura","pH",
+      mode_calculated <- mode_calculated[,c("Id_Finca","Year_muestreo","Arena_perc","Limo_perc","Arcilla_perc","pH",
                                             "Acidez_intercambiable_meq.100g","Soil_MO_perc","Soil_P_ppm","Soil_S_ppm",
                                             "Soil_K_meq.100g","Soil_Ca_meq.100g","Soil_Mg_meq.100g","Soil_Na_meq.100g",
                                             "Soil_Fe_meq.100g","Soil_Mn_meq.100g","Soil_Cu_meq.100g","Soil_Zn_meq.100g",
                                             "Soil_B_meq.100g","Soil_Perc_sat.K","Soil_Perc_sat.Ca","Soil_Perc_sat.Mg",
                                             "Soil_Perc_sat.Na","Soil_Perc_sat.Al")]
       mode_calculated[,3:ncol(mode_calculated)] <- NA
-      mode_calculated[,c('Id_Finca','Año_muestreo')] <- as.factor(c(farms[j], years[i]))
+      mode_calculated[,c('Id_Finca','Year_muestreo')] <- as.factor(c(farms[j], years[i]))
       return(mode_calculated)
     }
     
@@ -305,7 +354,7 @@ write.csv(mode_by_year_farm, './DATOS_PROCESADOS/_suelos/suelo_modal_finca_year_
 # LOAD Foliar data
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
 
-foliar_data <- read_excel('./DATOS_PROCESADOS/Banasan_data.xlsx', sheet='Foliar')
+foliar_data <- read_excel('./DATOS_PROCESADOS/Banasan_data_GC.xlsx', sheet='Foliar')
 
 varNames <- names(foliar_data)[7:length(names(foliar_data))]
 
@@ -333,7 +382,7 @@ g = gc(); rm(list=ls())
 # CALCULATE Lote raw
 foliar_data$Id_Lote_raw <- substr(foliar_data$Id_Lote, start=5, stop=nchar(foliar_data$Id_Lote))
 foliar_data <- foliar_data[,c("Id_Lote", "Id_Finca", "Id_Lote_raw", 
-                          "Año_muestreo", "Mes_muestreo", "Dia.semana_muestreo", "Codigo_muestra",
+                          "Year_muestreo", "Mes_muestreo", "Dia.semana_muestreo", "Codigo_muestra",
                           "Foliar_N_perc","Foliar_P_perc","Foliar_K_perc","Foliar_Ca_perc","Foliar_Mg_perc",
                           "Foliar_S_perc","Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",
                           "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1","Foliar_Na_ug.g.1",
@@ -386,29 +435,54 @@ g = gc(); rm(list=ls())
 
 foliar_data <- read.csv('./RESULTADOS/Identificacion_factores_limitantes/Foliar_analysis/foliar_data_by_plot.csv')
 
-# Mode function
+library(modeest)
 Mode <- function(x) {
+  if(sum(!is.na(x))>0){
+    m <- asselin(x, na.rm=TRUE)
+    return(m)
+  } else {
+    m <- NA
+    return(m)
+  }
+}
+
+# Mode function
+Mode2 <- function(x) {
   ux <- unique(x)
   ux <- as.vector(na.omit(ux))
   ux[which.max(tabulate(match(x, ux)))]
 }
 
 # Calculate modal foliar data by year and farm
-years <- unique(foliar_data$Año_muestreo)
+years <- unique(foliar_data$Year_muestreo)
 farms <- sort(as.character(unique(foliar_data$Id_Finca)))
 mode_by_year_farm <- lapply(1:length(years), function(i)
 {
   year_results <- lapply(1:length(farms), function(j)
   {
-    sub_foliar <- subset(foliar_data, subset=(foliar_data$Año_muestreo==years[i] & foliar_data$Id_Finca==farms[j]))
-    
+    sub_foliar <- subset(foliar_data, subset=(foliar_data$Year_muestreo==years[i] & foliar_data$Id_Finca==farms[j]))
     if(nrow(sub_foliar)>0){
-      
+      sub_foliar <- sub_foliar[,c('Year_muestreo','Id_Finca',"Foliar_N_perc","Foliar_P_perc","Foliar_K_perc","Foliar_Ca_perc",
+                                  "Foliar_Mg_perc","Foliar_S_perc","Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",
+                                  "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1","Foliar_Na_ug.g.1","Foliar_Na_perc",
+                                  "Foliar_Perc_Sat.K","Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg")]
       rownames(sub_foliar) <- 1:nrow(sub_foliar)
-      mode_calculated <- apply(sub_foliar, 2, Mode)
+      rownames(sub_foliar) <- 1:nrow(sub_foliar)
+      mode_calculated <- unlist(lapply(1:ncol(sub_foliar), function(i)
+      {
+        tryCatch(expr={
+          mode_calc <- Mode(sub_foliar[,i])
+        },
+        error=function(e){
+          cat("Assalin process failed to:", names(sub_foliar)[i], ", using traditional method\n")
+          mode_calc <- Mode2(sub_foliar[,i])
+          return(mode_calc)
+        })
+      }))
       mode_calculated <- as.data.frame(t(mode_calculated))
+      colnames(mode_calculated) <- names(sub_foliar)
       
-      mode_calculated <- mode_calculated[,c("Id_Finca", "Año_muestreo",
+      mode_calculated <- mode_calculated[,c("Id_Finca", "Year_muestreo",
                                             "Foliar_N_perc","Foliar_P_perc","Foliar_K_perc","Foliar_Ca_perc","Foliar_Mg_perc",
                                             "Foliar_S_perc","Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",
                                             "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1","Foliar_Na_ug.g.1",
@@ -419,13 +493,13 @@ mode_by_year_farm <- lapply(1:length(years), function(i)
       
       cat('Farm and year combination does not exists, NA values will be return\n')
       mode_calculated <- sub_foliar[1,]
-      mode_calculated <- mode_calculated[,c("Id_Finca", "Año_muestreo",
+      mode_calculated <- mode_calculated[,c("Id_Finca", "Year_muestreo",
                                             "Foliar_N_perc","Foliar_P_perc","Foliar_K_perc","Foliar_Ca_perc","Foliar_Mg_perc",
                                             "Foliar_S_perc","Foliar_Cl_perc","Foliar_Fe_ug.g.1","Foliar_Mn_ug.g.1",
                                             "Foliar_Cu_ug.g.1","Foliar_Zn_ug.g.1","Foliar_B_ug.g.1","Foliar_Na_ug.g.1",
                                             "Foliar_Na_perc","Foliar_Perc_Sat.K","Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg")]
       mode_calculated[,3:ncol(mode_calculated)] <- NA
-      mode_calculated[,c('Id_Finca','Año_muestreo')] <- as.factor(c(farms[j], years[i]))
+      mode_calculated[,c('Id_Finca','Year_muestreo')] <- as.factor(c(farms[j], years[i]))
       return(mode_calculated)
       
     }
@@ -453,7 +527,7 @@ library(sp)
 setwd('/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA')
 # setwd('//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA')
 
-cosechas <- read_excel('./DATOS_PROCESADOS/Banasan_data.xlsx', sheet='Cosechas')
+cosechas <- read_excel('./DATOS_PROCESADOS/Banasan_data_GC.xlsx', sheet='Cosechas')
 suelo    <- read.csv('./DATOS_PROCESADOS/_suelos/suelo_modal_finca_year_AEPS.csv')
 foliar   <- read.csv('./DATOS_PROCESADOS/_foliar/foliar_modal_finca_year_AEPS.csv')
 
