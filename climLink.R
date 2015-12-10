@@ -84,7 +84,7 @@ namFec         <- c("fechaSiembra","fechaCosecha") # Nombres de la fecha de siem
 
 a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
                              periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejo,
-                             namFecha=namFec, climBase=baseClima)
+                             namFecha=namFec, climBase=baseClima, onePhase=FALSE)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Save results

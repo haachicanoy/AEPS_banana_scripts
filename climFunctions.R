@@ -50,14 +50,18 @@ calculoIndicador <- function(climDB,stageIni,stageEnd,climVar)
 # GENERADOR DE INDICADOR
 # -------------------------------------------------------- #
 
-climIndicatorsGenerator <- function(climVar,namFun,Fase,periodcul,diasFase,cosechBase,namFecha,climBase)
+climIndicatorsGenerator <- function(climVar,namFun,Fase,periodcul,diasFase,cosechBase,namFecha,climBase,onePhase)
 {
     
   rnames <- row.names(cosechBase)
   percDias <- diasFase/periodcul
   diasCult <- as.numeric(cosechBase[,namFecha[2]]-cosechBase[,namFecha[1]])
   
-  diaAcum <- round(do.call(rbind,lapply(diasCult,function(x){x*cumsum(percDias)})),0)[,-length(diasFase)]
+  if(onePhase==T){
+    diaAcum <- round(do.call(rbind,lapply(diasCult,function(x){x*cumsum(percDias)})),0)# [,-length(diasFase)]
+  } else {
+    diaAcum <- round(do.call(rbind,lapply(diasCult,function(x){x*cumsum(percDias)})),0)[,-length(diasFase)]
+  }
   
   cropDates <- do.call(data.frame,
                        lapply(1:ncol(diaAcum),function(x){
