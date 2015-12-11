@@ -191,6 +191,12 @@ names(fertilizaciones)[grep2(pattern=c('Year_application', 'Week_fertilizacion')
 names(controles)[grep2(pattern=c('Year_control', 'Week_control'),names(controles))] <- c('Year','Week')
 
 # Create a dummy date for fertilizaciones database
+for(i in 1:nrow(fertilizaciones))
+{
+  if(nchar(fertilizaciones$Week[i])==1){
+    fertilizaciones$Week[i] <- paste('0',fertilizaciones$Week[i],sep='')
+  }
+}; rm(i)
 fertilizaciones$Date <- paste(fertilizaciones$Year, fertilizaciones$Week, sep='-')
 x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
 x <- x[match(fertilizaciones$Date, format(x, "%Y-%U"))]
@@ -206,7 +212,13 @@ controles$Date <- x
 controles <- controles[which(!is.na(controles$Date)),]
 rm(x)
 
-# Create a dummy date for controles database
+# Create a dummy date for siembras database
+for(i in 1:nrow(siembras))
+{
+  if(nchar(siembras$Week[i])==1){
+    siembras$Week[i] <- paste('0',siembras$Week[i],sep='')
+  }
+}; rm(i)
 siembras$Date <- paste(siembras$Year, siembras$Week, sep='-')
 x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
 x <- x[match(siembras$Date, format(x, "%Y-%U"))]
@@ -215,7 +227,7 @@ siembras <- siembras[which(!is.na(siembras$Date)),]
 rm(x)
 
 # Move to harvest date
-fertilizaciones$Date <- fertilizaciones$Date + 78 # Flowering step
+fertilizaciones$Date <- fertilizaciones$Date + 267 # Complete cicle
 controles$Date <- controles$Date + 113 # Floral differentiation
 siembras$Date <- siembras$Date + 267 # Complete cicle
 
@@ -248,16 +260,9 @@ write.csv(cosechasControles, 'cobana_cosechas_controles.csv', row.names=FALSE)
 # ----------------------------------------------------------------------------------------------------------------- #
 
 cosechasFert <- base::merge(x=cosechas, y=fertilizaciones, by=c('IDFinca','Year','Week'), all.x=TRUE)
-
-# Create a dummy date for cosechas database
-cosechasFert$Date <- paste(cosechasFert$Year, cosechasFert$Week, sep='-')
-x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
-x <- x[match(cosechasFert$Date, format(x, "%Y-%U"))]
-cosechasFert$Date <- x; rm(x)
-
 cosechasFert <- cosechasFert[which(!is.na(cosechasFert$Date)),]
 rownames(cosechasFert) <- 1:nrow(cosechasFert)
-write.csv(cosechasFert, 'cobana_cosechas_fertilizaciones.csv', row.names=FALSE)
+write.csv(cosechasFert, './DATOS_PROCESADOS/_cosecha/cobana_cosechas_fertilizaciones.csv', row.names=FALSE)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Make merge between cosechas y siembras

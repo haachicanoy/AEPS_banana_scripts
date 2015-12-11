@@ -25,9 +25,12 @@ wkDir <- paste(dirFol); setwd(wkDir)
 # Read database (change according necesities)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-baseManejo <- read.csv('./DATOS_PROCESADOS/_SOCIALIZACION/all_peso_racimo.csv')
+baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/cobana_cosechas_fertilizaciones.csv')
 # baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 baseManejo <- as.data.frame(baseManejo)
+baseManejo$ID <- paste(baseManejo$IDFinca,'-',baseManejo$Year,'-',baseManejo$Week, sep='')
+baseManejo$Date <- as.Date(baseManejo$Date, '%Y-%m-%d')
+baseManejo <- baseManejo[,c(43,42,22:41,20)]
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Load climate functions
@@ -90,5 +93,7 @@ a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
 # Save results
 # ----------------------------------------------------------------------------------------------------------------- #
 
-wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_SOCIALIZACION', sep=''); setwd(wkDir)
-write.csv(data.frame(baseManejo,a),"all_peso_racimo_climate.csv", row.names=FALSE)
+wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
+a <- data.frame(baseManejo,a)
+a <- a[,c(1:23,27:59,24)]
+write.csv(a,"cobana_cosechas_fertilizaciones_clima.csv", row.names=FALSE)
