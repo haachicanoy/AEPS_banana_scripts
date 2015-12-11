@@ -33,13 +33,13 @@ if(!require(cowplot)){install.packages('cowplot');library(cowplot)} else{library
 
 dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
 # dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
-wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_SOCIALIZACION', sep=''); setwd(wkDir)
+wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('all_peso_racimo_climate.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- read.csv('cobana_cosechas_fertilizaciones_clima_cycle.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -71,13 +71,13 @@ dataSet <- dataSet[,c("IDFinca","Year","Week","Date",                           
 #                       "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
 #                       "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
 #                       'Merma')]
-dataSet <- dataSet[,c(9:52, 3)]
+dataSet <- dataSet[,c(24:56, 57)]
 
 dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
 
-inputs  <- 1:44  # inputs columns
-output  <- 45    # output column
-segme   <- 46    # split column; In case of exists variety variable USE IT HERE
+inputs  <- 1:33  # inputs columns
+output  <- 34    # output column
+segme   <- 35    # split column; In case of exists variety variable USE IT HERE
 
 namsDataSet <- names(dataSet)
 
@@ -93,8 +93,8 @@ variety0    <- names(sort(contVariety[contVariety>=30]))
 if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
-wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_SOCIALIZACION_results', sep='')
-runID <- paste(wkDir, '/_run2_all_peso_racimo_climate', sep='')
+wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_informe_parcial_diciembre', sep='')
+runID <- paste(wkDir, '/_run3_cobana_cosechas_clima', sep='')
 if(!dir.exists(runID)){cat('Creating run directory'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
@@ -120,19 +120,19 @@ dataSetProces(variety, dataSet, segme, corRed="caret")
 # Run Linear model regression; only when all inputs are cuantitative
 # ----------------------------------------------------------------------------------------------------------------- #
 
-lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Racimos a cosechar (Racimos/ha)")
+lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Peso del racimo (kg)")
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Multilayer perceptron
 # ----------------------------------------------------------------------------------------------------------------- #
 
-multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Cajas totales (Cajas/ha)", pertuRelevance=T, ncores=3)
+multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Peso del racimo (kg)", pertuRelevance=T, ncores=23)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=30, ncores=4)
+randomForestFun(variety, nb.it=30, ncores=23)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables

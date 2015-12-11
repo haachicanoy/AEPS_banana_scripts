@@ -87,7 +87,7 @@ namFec         <- c("fechaSiembra","fechaCosecha") # Nombres de la fecha de siem
 
 a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
                              periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejo,
-                             namFecha=namFec, climBase=baseClima, onePhase=FALSE)
+                             namFecha=namFec, climBase=baseClima, onePhase=TRUE)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Save results
@@ -95,5 +95,5 @@ a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
 
 wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 a <- data.frame(baseManejo,a)
-a <- a[,c(1:23,27:59,24)]
-write.csv(a,"cobana_cosechas_fertilizaciones_clima.csv", row.names=FALSE)
+a <- a[,c(1:23,26:36,24)]
+write.csv(a,"cobana_cosechas_fertilizaciones_clima_cycle.csv", row.names=FALSE)
