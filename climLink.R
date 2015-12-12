@@ -25,12 +25,24 @@ wkDir <- paste(dirFol); setwd(wkDir)
 # Read database (change according necesities)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/cobana_cosechas_fertilizaciones.csv')
+baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/banasan_cosechas_suelo_foliar_AEPS_corrected.csv')
 # baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 baseManejo <- as.data.frame(baseManejo)
-baseManejo$ID <- paste(baseManejo$IDFinca,'-',baseManejo$Year,'-',baseManejo$Week, sep='')
-baseManejo$Date <- as.Date(baseManejo$Date, '%Y-%m-%d')
-baseManejo <- baseManejo[,c(43,42,22:41,20)]
+baseManejo$ID <- paste(baseManejo$Id_Lote,'-',baseManejo$Year,'-',baseManejo$Week,sep='')
+for(i in 1:nrow(baseManejo))
+{
+  if(nchar(baseManejo$Week[i])==1){
+    baseManejo$Week[i] <- paste('0',baseManejo$Week[i],sep='')
+  }
+}; rm(i)
+baseManejo$Date <- paste(baseManejo$Year,'-',baseManejo$Week,sep='')
+x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
+x <- x[match(baseManejo$Date, format(x, "%Y-%U"))]
+baseManejo$Date <- x
+baseManejo <- baseManejo[which(!is.na(baseManejo$Date)),]
+rm(x)
+
+baseManejo <- baseManejo[,c(62, 63, 9, 11, 22:58, 59:61)]
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Load climate functions
@@ -95,5 +107,5 @@ a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
 
 wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 a <- data.frame(baseManejo,a)
-a <- a[,c(1:23,26:36,24)]
-write.csv(a,"cobana_cosechas_fertilizaciones_clima_cycle.csv", row.names=FALSE)
+a <- a[,c(1:41,47:57,42:44)]
+write.csv(a,"banasan_cosechas_suelo_foliar_clima_cycle.csv", row.names=FALSE)
