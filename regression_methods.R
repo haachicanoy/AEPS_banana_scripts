@@ -71,13 +71,13 @@ dataSet <- dataSet[,c("IDFinca","Year","Week","Date",                           
 #                       "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",                        # Foliar
 #                       "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",                     # Foliar
 #                       'Merma')]
-dataSet <- dataSet[,c(24:56, 57)]
+dataSet <- dataSet[,c(19:31)]
 
 dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
 
-inputs  <- 1:33  # inputs columns
-output  <- 34    # output column
-segme   <- 35    # split column; In case of exists variety variable USE IT HERE
+inputs  <- 1:11  # inputs columns
+output  <- 12    # output column
+segme   <- 13    # split column; In case of exists variety variable USE IT HERE
 
 namsDataSet <- names(dataSet)
 
@@ -94,7 +94,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_informe_parcial_diciembre', sep='')
-runID <- paste(wkDir, '/_run3_cobana_cosechas_clima', sep='')
+runID <- paste(wkDir, '/_run9_cobana_cosechas_sin_fert_clima_ciclo_completo', sep='')
 if(!dir.exists(runID)){cat('Creating run directory'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
