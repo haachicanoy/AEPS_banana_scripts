@@ -590,3 +590,80 @@ library(FactoMineR)
 
 dmfa_results <- DMFA(don=cluster_coord2[,3:ncol(cluster_coord2)], num.fact=1)
 save.image('D:/ToBackup/AEPS-Big_data/Convenio_MADR/Informes/caracterizacion_clusters.RData')
+
+# Caracterización de clústers edafoclimáticos
+
+cluster_coord <- read.csv('D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/clusterSWD4DMFA.csv')
+
+grep2 <- function(pattern, x){grep(pattern, x)}
+grep2 <- Vectorize(FUN=grep2, vectorize.args='pattern')
+
+IDclusters <- c(0, 1, 2, 3, 6)
+
+# Solo clústers representativos
+cluster_coord2 <- cluster_coord
+cluster_coord2_0 <- subset(cluster_coord2, subset=cluster_coord2$cluster==0)
+cluster_coord2_1 <- subset(cluster_coord2, subset=cluster_coord2$cluster==1)
+cluster_coord2_2 <- subset(cluster_coord2, subset=cluster_coord2$cluster==2)
+cluster_coord2_3 <- subset(cluster_coord2, subset=cluster_coord2$cluster==3)
+cluster_coord2_6 <- subset(cluster_coord2, subset=cluster_coord2$cluster==6)
+cluster_coord2 <- rbind(cluster_coord2_0, cluster_coord2_1, cluster_coord2_2, cluster_coord2_3, cluster_coord2_6)
+rm(cluster_coord2_0, cluster_coord2_1, cluster_coord2_2, cluster_coord2_3, cluster_coord2_6)
+cluster_coord2$cluster <- as.factor(cluster_coord2$cluster)
+cluster_coord2 <- cluster_coord2[complete.cases(cluster_coord2),]
+rownames(cluster_coord2) <- 1:nrow(cluster_coord2)
+rm(cluster_coord)
+
+library(FactoMineR)
+
+pca_g0 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==0,-c(1:3)], scale.unit=TRUE)
+View(pca_g0$eig)
+View(pca_g0$var$contrib)
+
+pca_g1 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==1,-c(1:3)], scale.unit=TRUE)
+View(pca_g1$eig)
+View(pca_g1$var$cor)
+
+pca_g2 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==2,-c(1:3)], scale.unit=TRUE)
+View(pca_g2$eig)
+View(pca_g2$var$cor)
+
+pca_g3 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==3,-c(1:3)], scale.unit=TRUE)
+View(pca_g3$eig)
+View(pca_g3$var$cor)
+
+pca_g6 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==6,-c(1:3)], scale.unit=TRUE)
+View(pca_g6$eig)
+View(pca_g6$var$cor)
+
+library(dplyr)
+library(tidyr)
+
+# Antes de calcular las medianas estandarizar los datos
+median_values <- cluster_coord2 %>% group_by(cluster) %>% summarise_each(funs(median))
+median_values <- as.data.frame(median_values)
+
+median_values2 <- median_values %>% gather(variable, median, -cluster)
+
+madFun <- function(x) {z <- mad(x, constant = 1, na.rm = TRUE); return(z)}
+median_dev <- cluster_coord2 %>% group_by(cluster) %>% summarise_each(funs(madFun))
+median_dev <- as.data.frame(median_dev)
+
+median_dev2 <- median_dev %>% gather(variable, mad, -cluster)
+
+median_data <- merge(median_values2, median_dev2, by=c('cluster','variable'))
+rm(median_values, median_values2, median_dev, median_dev2)
+
+median_data <- median_data[-which(median_data$variable=='x'|median_data$variable=='y'),]
+median_data <- median_data[-which(median_data$cluster==0),]
+median_data$variable <- factor(median_data$variable, as.character(median_data$variable))
+median_data$cluster <- factor(median_data$cluster, as.character(median_data$cluster))
+
+# Define the top and bottom of the errorbars
+limits <- aes(ymax=median+mad, ymin=median-mad)
+
+p <- ggplot(median_data, aes(fill=cluster, y=median, x=variable))
+p <- p + geom_bar(position="dodge", stat="identity")
+dodge <- position_dodge(width=0.9)
+p <- p + geom_bar(position=dodge) + geom_errorbar(limits, position=dodge, width=0.25)
+p
