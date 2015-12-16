@@ -132,7 +132,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=100, ncores=23)
+randomForestFun(variety, nb.it=2, ncores=23)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
