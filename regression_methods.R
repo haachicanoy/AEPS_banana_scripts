@@ -87,7 +87,7 @@ namsDataSet <- names(dataSet)
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_scripts', sep=''); setwd(wkDir)
 
-load('All-Functions-AEPS_BD.RData')
+load('All-Functions-AEPS_BD_updated.RData')
 contVariety <- table(dataSet[,segme])
 variety0    <- names(sort(contVariety[contVariety>=30]))
 if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
@@ -132,7 +132,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=10, ncores=4)
+randomForestFun(variety, nb.it=100, ncores=23)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
