@@ -514,7 +514,7 @@ ggsave(filename='D:/ToBackup/AEPS-Big_data/Convenio_MADR/Informes/bio1_cluster.p
 library(FactoMineR)
 
 dmfa_results <- DMFA(don=cluster_coord2[,3:ncol(cluster_coord2)], num.fact=1)
-save.image('D:/ToBackup/AEPS-Big_data/Convenio_MADR/Informes/caracterizacion_clusters.RData')
+save.image('D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/caracterizacion_clusters.RData')
 
 ###################################################################
 # Analisis de datos climaticos por clusters
@@ -591,24 +591,34 @@ library(FactoMineR)
 dmfa_results <- DMFA(don=cluster_coord2[,3:ncol(cluster_coord2)], num.fact=1)
 save.image('D:/ToBackup/AEPS-Big_data/Convenio_MADR/Informes/caracterizacion_clusters.RData')
 
+
+
+
+
+
+
+
+
+
+# =========================================================================================================================================== #
 # Caracterización de clústers edafoclimáticos
+# =========================================================================================================================================== #
 
 cluster_coord <- read.csv('D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/clusterSWD4DMFA.csv')
 
 grep2 <- function(pattern, x){grep(pattern, x)}
 grep2 <- Vectorize(FUN=grep2, vectorize.args='pattern')
 
-IDclusters <- c(0, 1, 2, 3, 6)
+IDclusters <- c(1, 2, 3, 6)
 
 # Solo clústers representativos
 cluster_coord2 <- cluster_coord
-cluster_coord2_0 <- subset(cluster_coord2, subset=cluster_coord2$cluster==0)
 cluster_coord2_1 <- subset(cluster_coord2, subset=cluster_coord2$cluster==1)
 cluster_coord2_2 <- subset(cluster_coord2, subset=cluster_coord2$cluster==2)
 cluster_coord2_3 <- subset(cluster_coord2, subset=cluster_coord2$cluster==3)
 cluster_coord2_6 <- subset(cluster_coord2, subset=cluster_coord2$cluster==6)
-cluster_coord2 <- rbind(cluster_coord2_0, cluster_coord2_1, cluster_coord2_2, cluster_coord2_3, cluster_coord2_6)
-rm(cluster_coord2_0, cluster_coord2_1, cluster_coord2_2, cluster_coord2_3, cluster_coord2_6)
+cluster_coord2 <- rbind(cluster_coord2_1, cluster_coord2_2, cluster_coord2_3, cluster_coord2_6)
+rm(cluster_coord2_1, cluster_coord2_2, cluster_coord2_3, cluster_coord2_6)
 cluster_coord2$cluster <- as.factor(cluster_coord2$cluster)
 cluster_coord2 <- cluster_coord2[complete.cases(cluster_coord2),]
 rownames(cluster_coord2) <- 1:nrow(cluster_coord2)
@@ -616,54 +626,150 @@ rm(cluster_coord)
 
 library(FactoMineR)
 
-pca_g0 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==0,-c(1:3)], scale.unit=TRUE)
-View(pca_g0$eig)
-View(pca_g0$var$contrib)
+# pca_g0 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==0,-c(1:3)], scale.unit=TRUE)
+# View(pca_g0$eig)
+# View(pca_g0$var$contrib)
 
-pca_g1 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==1,-c(1:3)], scale.unit=TRUE)
-View(pca_g1$eig)
-View(pca_g1$var$cor)
+pca_g1 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==1,-c(1:3)], scale.unit=TRUE, graph=FALSE)
+pca_g2 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==2,-c(1:3)], scale.unit=TRUE, graph=FALSE)
+pca_g3 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==3,-c(1:3)], scale.unit=TRUE, graph=FALSE)
+pca_g6 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==6,-c(1:3)], scale.unit=TRUE, graph=FALSE)
 
-pca_g2 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==2,-c(1:3)], scale.unit=TRUE)
-View(pca_g2$eig)
-View(pca_g2$var$cor)
+g1_var <- apply(X=pca_g1$var$cor[,1:3], MARGIN=2, FUN=function(x){z <- x > 0.9|x < -0.9; return(z)})
+g2_var <- apply(X=pca_g2$var$cor[,1:5], MARGIN=2, FUN=function(x){z <- x > 0.9|x < -0.9; return(z)})
+g3_var <- apply(X=pca_g3$var$cor[,1:3], MARGIN=2, FUN=function(x){z <- x > 0.9|x < -0.9; return(z)})
+g6_var <- apply(X=pca_g6$var$cor[,1:5], MARGIN=2, FUN=function(x){z <- x > 0.9|x < -0.9; return(z)})
 
-pca_g3 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==3,-c(1:3)], scale.unit=TRUE)
-View(pca_g3$eig)
-View(pca_g3$var$cor)
+g1_var <- rownames(g1_var)[rowSums(g1_var)>0]
+g2_var <- rownames(g2_var)[rowSums(g2_var)>0]
+g3_var <- rownames(g3_var)[rowSums(g3_var)>0]
+g6_var <- rownames(g6_var)[rowSums(g6_var)>0]
 
-pca_g6 <- FactoMineR::PCA(cluster_coord2[cluster_coord2$cluster==6,-c(1:3)], scale.unit=TRUE)
-View(pca_g6$eig)
-View(pca_g6$var$cor)
+g_var <- c(g1_var, g2_var, g3_var, g6_var)
+g_var2 <- unique(g_var)
+g_var2 <- g_var2[-grep2(pattern='bio_20$', x=g_var2)]
+
+temp <- g_var2[grep2(pattern=paste('bio_',1:11,'$',sep=''), x=g_var2)]
+prec <- g_var2[grep2(pattern=paste('bio_',12:19,'$',sep=''), x=g_var2)]
+soil <- g_var2[setdiff(1:length(g_var2), grep2(pattern=paste('bio_',1:19,'$',sep=''), x=g_var2))]
+
+library(ggplot2)
+
+eig_table1 <- pca_g1$eig
+eig_table1$Cluster <- 'Cluster 1'
+eig_table1$princ_comp <- 1:nrow(eig_table1)
+eig_table1$cond <- eig_table1$`cumulative percentage of variance` < 80
+eig_table1$cond[1:(which(eig_table1$cond==TRUE)[length(which(eig_table1$cond==TRUE))] + 1)] <- 1
+eig_table1$cond[(which(eig_table1$cond==TRUE)[length(which(eig_table1$cond==TRUE))] + 2):length(eig_table1$cond)] <- 0
+
+eig_table2 <- pca_g2$eig
+eig_table2$Cluster <- 'Cluster 2'
+eig_table2$princ_comp <- 1:nrow(eig_table2)
+eig_table2$cond <- eig_table2$`cumulative percentage of variance` < 80
+eig_table2$cond[1:(which(eig_table2$cond==TRUE)[length(which(eig_table2$cond==TRUE))] + 1)] <- 1
+eig_table2$cond[(which(eig_table2$cond==TRUE)[length(which(eig_table2$cond==TRUE))] + 2):length(eig_table2$cond)] <- 0
+
+eig_table3 <- pca_g3$eig
+eig_table3$Cluster <- 'Cluster 3'
+eig_table3$princ_comp <- 1:nrow(eig_table3)
+eig_table3$cond <- eig_table3$`cumulative percentage of variance` < 80
+eig_table3$cond[1:(which(eig_table3$cond==TRUE)[length(which(eig_table3$cond==TRUE))] + 1)] <- 1
+eig_table3$cond[(which(eig_table3$cond==TRUE)[length(which(eig_table3$cond==TRUE))] + 2):length(eig_table3$cond)] <- 0
+
+eig_table6 <- pca_g6$eig
+eig_table6$Cluster <- 'Cluster 6'
+eig_table6$princ_comp <- 1:nrow(eig_table6)
+eig_table6$cond <- eig_table6$`cumulative percentage of variance` < 80
+eig_table6$cond[1:(which(eig_table6$cond==TRUE)[length(which(eig_table6$cond==TRUE))] + 1)] <- 1
+eig_table6$cond[(which(eig_table6$cond==TRUE)[length(which(eig_table6$cond==TRUE))] + 2):length(eig_table6$cond)] <- 0
+
+eig_table <- rbind(eig_table1, eig_table2, eig_table3, eig_table6)
+rm(eig_table1, eig_table2, eig_table3, eig_table6)
+
+p <- ggplot(eig_table, aes(x=factor(princ_comp, sort(unique(princ_comp))), y=`cumulative percentage of variance`, fill=factor(cond))) + geom_bar(stat="identity")
+p <- p + xlab('Componente principal') + ylab('Porcentaje de varianza acumulado (%)') +  geom_hline(yintercept=80)
+p <- p + theme_minimal() + theme_bw()
+p <- p + facet_wrap(~Cluster, ncol=2)
+p <- p + theme(legend.position="none")
+p <- p + theme(axis.text.x = element_text(size=6))
+ggsave(filename='D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/pca_cluster.png', plot=p, width=7, height=6, units='in', dpi=300)
+
 
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 
-# Antes de calcular las medianas estandarizar los datos
+# ========================================== #
+# Escalar datos
+# ========================================== #
+
+median_conditions <- apply(cluster_coord2[,-c(1:3)], MARGIN=2, median)
+
+# median_scale <- function(x){z <- (x - median(x, na.rm=TRUE))/mad(x, constant=1, na.rm=TRUE); return(z)}
+# mean_scale <- function(x){z <- (x- mean(x, na.rm=TRUE))/sd(x, na.rm=TRUE); return(z)}
+# cluster_coord2_scale <- cluster_coord2 %>% group_by(cluster) %>% mutate_each_(funs(median_scale),vars=c("bio_1","bio_2","bio_3","bio_4","bio_5","bio_6","bio_7","bio_8","bio_9","bio_10","bio_11",
+#                                                                          "bio_12","bio_13","bio_14","bio_15","bio_16","bio_17","bio_18","bio_19",
+#                                                                          "bio_20",
+#                                                                          "bulk_density","cec","clay_percent","coarse_fragments","organic_carbon","pH","sand_percent","silt_percent"))
+# cluster_coord2_scale <- as.data.frame(cluster_coord2_scale)
+# cluster_coord2_scale[,4:ncol(cluster_coord2_scale)] <- round(cluster_coord2_scale[,4:ncol(cluster_coord2_scale)], 2)
+
+# ========================================== #
+# Calcular la mediana por cluster
+# ========================================== #
+
 median_values <- cluster_coord2 %>% group_by(cluster) %>% summarise_each(funs(median))
 median_values <- as.data.frame(median_values)
 
-median_values2 <- median_values %>% gather(variable, median, -cluster)
+median_changes <- lapply(1:length(median_conditions), function(i)
+{
+  median_values2 <- median_values[,-c(1:3)]
+  z <- (median_conditions[i] - median_values2[,i])/median_conditions[i]
+  z <- as.data.frame(z); colnames(z) <- names(median_values2)[i]
+  return(z)
+}) 
+median_changes <- Reduce(function(...) cbind(..., deparse.level=1), median_changes)
+median_changes$Cluster <- factor(IDclusters)
 
-madFun <- function(x) {z <- mad(x, constant = 1, na.rm = TRUE); return(z)}
-median_dev <- cluster_coord2 %>% group_by(cluster) %>% summarise_each(funs(madFun))
-median_dev <- as.data.frame(median_dev)
+median_values2 <- median_changes %>% gather(variable, median, -Cluster)
 
-median_dev2 <- median_dev %>% gather(variable, mad, -cluster)
-
-median_data <- merge(median_values2, median_dev2, by=c('cluster','variable'))
+median_data <- median_values2
 rm(median_values, median_values2, median_dev, median_dev2)
 
-median_data <- median_data[-which(median_data$variable=='x'|median_data$variable=='y'),]
-median_data <- median_data[-which(median_data$cluster==0),]
-median_data$variable <- factor(median_data$variable, as.character(median_data$variable))
-median_data$cluster <- factor(median_data$cluster, as.character(median_data$cluster))
+median_data <- median_data[-which(median_data$variable=='bio_20'),]
+median_data$variable <- factor(median_data$variable, unique(as.character(median_data$variable)))
+median_data$Cluster <- factor(median_data$Cluster, sort(unique(as.character(median_data$Cluster))))
 
-# Define the top and bottom of the errorbars
-limits <- aes(ymax=median+mad, ymin=median-mad)
+median_data$var_group <- NA
+median_data$var_group[grep2(pattern=paste('bio_',1:11,'$',sep=''), x=median_data$variable)] <- 'Temperatura'
+median_data$var_group[grep2(pattern=paste('bio_',12:19,'$',sep=''), x=median_data$variable)] <- 'Precipitación'
+median_data$var_group[setdiff(1:length(median_data$variable), grep2(pattern=paste('bio_',1:19,'$',sep=''), x=median_data$variable))] <- 'Suelos'
 
-p <- ggplot(median_data, aes(fill=cluster, y=median, x=variable))
+median_data <- median_data[-which(median_data$variable=='cec'|median_data$variable=='clay_percent'|median_data$variable=='coarse_fragments'|median_data$variable=='pH'|median_data$variable=='sand_percent'|median_data$variable=='silt_percent'),]
+median_data$variable <- factor(median_data$variable, unique(as.character(median_data$variable)))
+median_data$Cluster <- factor(median_data$Cluster, sort(unique(as.character(median_data$Cluster))))
+
+p <- ggplot(median_data, aes(fill=Cluster, y=-median*100, x=variable))
 p <- p + geom_bar(position="dodge", stat="identity")
 dodge <- position_dodge(width=0.9)
-p <- p + geom_bar(position=dodge) + geom_errorbar(limits, position=dodge, width=0.25)
-p
+p <- p + geom_bar(position=dodge) # + geom_errorbar(limits, position=dodge, width=0.25)
+p <- p + xlab('Variable') + ylab('Porcentaje de cambio respecto a la mediana general (%)')
+p <- p + facet_wrap(~var_group, ncol=1, scales = "free")
+ggsave(filename='D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/descripcion_variables.png', plot=p, width=7, height=8.5, units='in', dpi=300)
+
+median_data_s3 <- median_data[-which(median_data$Cluster==3),]
+
+p <- ggplot(median_data_s3, aes(fill=Cluster, y=-median*100, x=variable))
+p <- p + geom_bar(position="dodge", stat="identity")
+dodge <- position_dodge(width=0.9)
+p <- p + geom_bar(position=dodge) # + geom_errorbar(limits, position=dodge, width=0.25)
+p <- p + xlab('Variable') + ylab('Porcentaje de cambio respecto a la mediana general (%)')
+p <- p + facet_wrap(~var_group, ncol=1, scales = "free")
+ggsave(filename='D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/descripcion_variables_s3.png', plot=p, width=7, height=8.5, units='in', dpi=300)
+
+
+p <- ggplot(cluster_coord2, aes(x=cluster, y=bio_20))
+p <- p + geom_boxplot()
+p <- p + xlab('Cluster') + ylab('Altitud (MSNM)')
+p <- p + theme_minimal() + theme_bw()
+ggsave(filename='D:/ToBackup/AEPS-Big_data/Convenio_MADR/ASBAMA/Informes/boxplot_altitud_cluster.png', plot=p, width=6, height=6, units='in', dpi=300)
