@@ -32,6 +32,7 @@ if(!require(cowplot)){install.packages('cowplot');library(cowplot)} else{library
 # ----------------------------------------------------------------------------------------------------------------- #
 
 dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
+dirFol  <- "Z:"
 # dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
 wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 
@@ -132,7 +133,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=2, ncores=23)
+randomForestFun(variety, nb.it=10, ncores=4)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
