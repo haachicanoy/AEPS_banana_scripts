@@ -3,6 +3,14 @@
 # CIAT, 2015
 
 # ----------------------------------------------------------------------------------------------------------------- #
+# Create short directory from Linux OS (linux code)
+# ----------------------------------------------------------------------------------------------------------------- #
+
+# Create a symbolic link command
+## ln -s {/path/to/file-name} {link-name}
+## ln -s /mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA Z
+
+# ----------------------------------------------------------------------------------------------------------------- #
 # Load packages
 # ----------------------------------------------------------------------------------------------------------------- #
 
@@ -31,9 +39,14 @@ if(!require(cowplot)){install.packages('cowplot');library(cowplot)} else{library
 # Set work directory
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
-dirFol  <- "Z:"
-# dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
+# Windows OS
+dirFol  <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA" # Long version
+dirFol  <- "Z:" # Short version
+
+# Linux OS
+dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA" # Long version
+dirFol  <- "Z" # Short version
+
 wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -96,7 +109,7 @@ variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_informe_parcial_diciembre', sep='')
 runID <- paste(wkDir, '/_run10_cobana_cosechas_sin_fert_clima_ciclo_completo', sep='')
-if(!dir.exists(runID)){cat('Creating run directory'); dir.create(runID)} else {cat('Run directory exists\n')}
+if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
 # ----------------------------------------------------------------------------------------------------------------- #
