@@ -103,7 +103,7 @@ namsDataSet <- names(dataSet)
 # Creating the split factors (in case of exists more than 1 variety run models for each variety)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_scripts', sep=''); setwd(wkDir)
+wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_scripts', sep=''); setwd(wkDir)
 
 load('All-Functions-AEPS_BD.RData')
 contVariety <- table(dataSet[,segme])
@@ -111,7 +111,7 @@ variety0    <- names(sort(contVariety[contVariety>=30]))
 if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
-wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_informe_parcial_diciembre', sep='')
+wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_informe_final', sep='')
 runID <- paste(wkDir, '/_run21_cobana_cosechas_sin_fert_clima_ciclo_completo', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
