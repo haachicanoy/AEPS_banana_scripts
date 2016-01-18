@@ -10,6 +10,9 @@
 ## ln -s {/path/to/file-name} {link-name}
 ## ln -s /mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA Z
 
+# I tried to create a shortcut on linux OS but it seems that doesn't work
+# when you try to concatenate strings using paste function. So, in this case is better to use the complete directory
+
 # ----------------------------------------------------------------------------------------------------------------- #
 # Load packages
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -34,6 +37,7 @@ if(!require(sp)){install.packages('sp');library(sp)} else{library(sp)}
 if(!require(dismo)){install.packages('dismo');library(dismo)} else{library(dismo)}
 if(!require(gbm)){install.packages('gbm');library(gbm)} else{library(gbm)}
 if(!require(cowplot)){install.packages('cowplot');library(cowplot)} else{library(cowplot)}
+if(!require(gridExtra)){install.packages('gridExtra');library(gridExtra)} else{library(gridExtra)}
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Set work directory
@@ -45,7 +49,7 @@ dirFol  <- "Z:" # Short version
 
 # Linux OS
 dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA" # Long version
-dirFol  <- "Z" # Short version
+# dirFol  <- "Z" # Short version. PLEASE DON'T USE
 
 wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 
@@ -101,14 +105,14 @@ namsDataSet <- names(dataSet)
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_scripts', sep=''); setwd(wkDir)
 
-load('All-Functions-AEPS_BD_updated.RData')
+load('All-Functions-AEPS_BD.RData')
 contVariety <- table(dataSet[,segme])
 variety0    <- names(sort(contVariety[contVariety>=30]))
 if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"All"))}
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Identificacion_factores_limitantes/_informe_parcial_diciembre', sep='')
-runID <- paste(wkDir, '/_run10_cobana_cosechas_sin_fert_clima_ciclo_completo', sep='')
+runID <- paste(wkDir, '/_run21_cobana_cosechas_sin_fert_clima_ciclo_completo', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
@@ -146,7 +150,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=10, ncores=4)
+randomForestFun(variety, nb.it=100, ncores=23)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
