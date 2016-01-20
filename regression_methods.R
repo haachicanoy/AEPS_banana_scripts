@@ -66,7 +66,6 @@ dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSe
 
 names(dataSet) # With this command you can see all variable names in the original dataset
 # Following code shows the variables that are selected
-rownames(dataSet) <- paste(dataSet$Id_Lote,'-',)
 dataSet <- dataSet[,c("Arena_perc","Limo_perc","Arcilla_perc",
                       "pH","Soil_MO_perc","Soil_P_ppm",
                       "Soil_S_ppm","Soil_K_meq.100g","Soil_Ca_meq.100g",
