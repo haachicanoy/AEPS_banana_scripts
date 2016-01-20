@@ -81,7 +81,6 @@ weekClim$DateComplete <- x
 weekClim <- weekClim[which(!is.na(weekClim$DateComplete)),]
 rm(x)
 
-
 # Weekly harvest data
 library(readxl)
 harvest <- read_excel('Z:/DATOS_PROCESADOS/Banasan_data_GC.xlsx', sheet='Cosechas')
@@ -118,6 +117,7 @@ ggsave(filename='C:/Users/haachicanoy/Desktop/peso_racimo_patterns.pdf', plot=pl
 
 # convert -verbose -density 300 Fig1.pdf -quality 100 -sharpen 0x1.0 -alpha off Fig1.png # From Julian
 # system("convert -verbose -density 300 C:/Users/haachicanoy/Desktop/peso_racimo_patterns.pdf -quality 100 -sharpen 0x1.0 -alpha off C:/Users/haachicanoy/Desktop/peso_racimo_patterns.png")
+# system("convert -verbose -density 300 /home/hachicanoy/Histogram.pdf -quality 100 -sharpen 0x1.0 -alpha off /home/hachicanoy/Histogram.png", wait=TRUE)
 
 farms <- sort(unique(as.character(harvest$Finca)))
 harvest <- lapply(1:length(farms), function(i)
@@ -129,7 +129,7 @@ harvest <- lapply(1:length(farms), function(i)
 harvest <- Reduce(function(...){rbind(..., deparse.level=1)}, harvest)
 plot1 <- ggplot(data=harvest, aes(x=DateComplete, y=Peso_racimo, fill=Finca, colour=Finca)) + geom_line()
 plot1 <- plot1 + guides(fill=guide_legend(ncol=2)) + ggtitle('Peso promedio del racimo (kg)/Finca a través del tiempo')
-plot1 <- plot1 + xlab('Fecha') + ylab('Peso del racimo (kg)') + geom_smooth()
+plot1 <- plot1 + xlab('Fecha') + ylab('Peso del racimo (kg)') # + geom_smooth()
 plot1
 
 peso_list <- lapply(1:length(farms), function(i)
@@ -146,8 +146,11 @@ clim_list <- lapply(2:(ncol(weekClim)-1), function(i)
   return(wClim)
 })
 
-all_list <- c(peso_list, clim_list)
+require(dtw)
+library(xts)
+library(ggplot2)
 
+# Function to calculate DTW distance
 distDtwMV <- function(listObje)
 {
   require(dtw)
@@ -173,10 +176,7 @@ distDtwMV <- function(listObje)
   return(as.dist(listDist))
 }
 
-results <- distDtwMV(all_list)
-
-#HIRARCHICAL CLUSTERING
-
+# Function to do hierarchical clustering
 hirarCluster <- function(distMatrix)
 {
   hcAll      <- hclust(distMatrix,method="average")
@@ -214,89 +214,93 @@ hirarCluster <- function(distMatrix)
   return(membAll)
 }
 
-results_hirarCluster <- hirarCluster(results)
-
-require(dtw)
-library(xts)
-library(ggplot2)
-
-names(all_list) <- c(farms, 'ESOL', 'RAIN', 'RHUM', 'TMAX', 'TMIN')
-
-cluster1 <- all_list[grep(pattern=1, x=results_hirarCluster)]
-cluster2 <- all_list[grep(pattern=2, x=results_hirarCluster)]
-cluster3 <- all_list[grep(pattern=3, x=results_hirarCluster)]
-cluster4 <- all_list[grep(pattern=4, x=results_hirarCluster)]
-cluster5 <- all_list[grep(pattern=5, x=results_hirarCluster)]
-cluster6 <- all_list[grep(pattern=6, x=results_hirarCluster)]
-
-### Cluster 1
-cluster1 <- lapply(1:length(cluster1), function(i)
+# Make process for each farm to compare
+lappy(1:length(peso_list), function(i)
 {
-  time.df <- data.frame(Date=index(cluster1[[i]]), Peso_racimo=coredata(cluster1[[i]])); time.df$Finca <- names(cluster1)[[i]]
-  return(time.df)
+  # Processing
+  all_list <- c(peso_list[[i]], clim_list)
+  names(all_list) <- c(farms[[i]], 'ESOL', 'RAIN', 'RHUM', 'TMAX', 'TMIN')
+  results <- distDtwMV(all_list)
+  results_hirarCluster <- hirarCluster(results)
+  
+  # Do plots
+  cluster1 <- all_list[grep(pattern=1, x=results_hirarCluster)]
+  cluster2 <- all_list[grep(pattern=2, x=results_hirarCluster)]
+  cluster3 <- all_list[grep(pattern=3, x=results_hirarCluster)]
+  
+  ### Cluster 1
+  cluster1 <- lapply(1:length(cluster1), function(i)
+  {
+    time.df <- data.frame(Date=index(cluster1[[i]]), Peso_racimo=coredata(cluster1[[i]])); time.df$Finca <- names(cluster1)[[i]]
+    return(time.df)
+  })
+  cluster1 <- Reduce(function(...) rbind(..., deparse.level=1), cluster1)
+  
+  plot1 <- ggplot(cluster1, aes(x=Date, y=Peso_racimo, colour=Finca)) + geom_line()
+  plot1 <- plot1 + xlab('Fecha') + ylab('Peso del racimo (kg)') + ggtitle('Cluster 1')
+  plot1 <- plot1 + theme_bw() + theme(panel.background = element_blank(),
+                                      panel.grid.major.x = element_blank(),
+                                      panel.grid.minor.x = element_blank(),
+                                      panel.grid.major.y = element_blank(),
+                                      panel.grid.minor.y = element_blank(),
+                                      title = element_text(face='bold',size=15),
+                                      axis.text.x = element_text(size=10),
+                                      axis.text.y = element_text(size=10),
+                                      axis.title.x = element_text(face="bold",size=12),
+                                      axis.title.y = element_text(face="bold",size=12),
+                                      legend.title = element_text(face="bold",size=11),
+                                      legend.text  = element_text(size=9))
+  plot1
+  
+  ### Cluster 2
+  cluster2 <- lapply(1:length(cluster2), function(i)
+  {
+    time.df <- data.frame(Date=index(cluster2[[i]]), Peso_racimo=coredata(cluster2[[i]])); time.df$Finca <- names(cluster2)[[i]]
+    return(time.df)
+  })
+  cluster2 <- Reduce(function(...) rbind(..., deparse.level=1), cluster2)
+  
+  plot2 <- ggplot(cluster2, aes(x=Date, y=Peso_racimo, colour=Finca)) + geom_line()
+  plot2 <- plot2 + xlab('Fecha') + ylab('Peso del racimo (kg)') + ggtitle('Cluster 2')
+  plot2 <- plot2 + theme_bw() + theme(panel.background = element_blank(),
+                                      panel.grid.major.x = element_blank(),
+                                      panel.grid.minor.x = element_blank(),
+                                      panel.grid.major.y = element_blank(),
+                                      panel.grid.minor.y = element_blank(),
+                                      title = element_text(face='bold',size=15),
+                                      axis.text.x = element_text(size=10),
+                                      axis.text.y = element_text(size=10),
+                                      axis.title.x = element_text(face="bold",size=12),
+                                      axis.title.y = element_text(face="bold",size=12),
+                                      legend.title = element_text(face="bold",size=11),
+                                      legend.text  = element_text(size=9))
+  plot2
+  
+  ### Cluster 3
+  cluster3 <- lapply(1:length(cluster3), function(i)
+  {
+    time.df <- data.frame(Date=index(cluster3[[i]]), Peso_racimo=coredata(cluster3[[i]])); time.df$Finca <- names(cluster3)[[i]]
+    return(time.df)
+  })
+  cluster3 <- Reduce(function(...) rbind(..., deparse.level=1), cluster3)
+  
+  plot3 <- ggplot(cluster3, aes(x=Date, y=Peso_racimo, colour=Finca)) + geom_line()
+  plot3 <- plot3 + xlab('Fecha') + ylab('Peso del racimo (kg)') + ggtitle('Cluster 3')
+  plot3 <- plot3 + theme_bw() + theme(panel.background = element_blank(),
+                                      panel.grid.major.x = element_blank(),
+                                      panel.grid.minor.x = element_blank(),
+                                      panel.grid.major.y = element_blank(),
+                                      panel.grid.minor.y = element_blank(),
+                                      title = element_text(face='bold',size=15),
+                                      axis.text.x = element_text(size=10),
+                                      axis.text.y = element_text(size=10),
+                                      axis.title.x = element_text(face="bold",size=12),
+                                      axis.title.y = element_text(face="bold",size=12),
+                                      legend.title = element_text(face="bold",size=11),
+                                      legend.text  = element_text(size=9))
+  plot3
+  
+  return()
 })
-cluster1 <- Reduce(function(...) rbind(..., deparse.level=1), cluster1)
 
-plot1 <- ggplot(cluster1, aes(x=Date, y=Peso_racimo, colour=Finca)) + geom_line()
-plot1 <- plot1 + xlab('Fecha') + ylab('Peso del racimo (kg)') + ggtitle('Cluster 1')
-plot1 <- plot1 + theme_bw() + theme(panel.background = element_blank(),
-                                          panel.grid.major.x = element_blank(),
-                                          panel.grid.minor.x = element_blank(),
-                                          panel.grid.major.y = element_blank(),
-                                          panel.grid.minor.y = element_blank(),
-                                          title = element_text(face='bold',size=15),
-                                          axis.text.x = element_text(size=10),
-                                          axis.text.y = element_text(size=10),
-                                          axis.title.x = element_text(face="bold",size=12),
-                                          axis.title.y = element_text(face="bold",size=12),
-                                          legend.title = element_text(face="bold",size=11),
-                                          legend.text  = element_text(size=9))
-plot1
 
-### Cluster 2
-cluster2 <- lapply(1:length(cluster2), function(i)
-{
-  time.df <- data.frame(Date=index(cluster2[[i]]), Peso_racimo=coredata(cluster2[[i]])); time.df$Finca <- names(cluster2)[[i]]
-  return(time.df)
-})
-cluster2 <- Reduce(function(...) rbind(..., deparse.level=1), cluster2)
-
-plot2 <- ggplot(cluster2, aes(x=Date, y=Peso_racimo, colour=Finca)) + geom_line()
-plot2 <- plot2 + xlab('Fecha') + ylab('Peso del racimo (kg)') + ggtitle('Cluster 2')
-plot2 <- plot2 + theme_bw() + theme(panel.background = element_blank(),
-                                    panel.grid.major.x = element_blank(),
-                                    panel.grid.minor.x = element_blank(),
-                                    panel.grid.major.y = element_blank(),
-                                    panel.grid.minor.y = element_blank(),
-                                    title = element_text(face='bold',size=15),
-                                    axis.text.x = element_text(size=10),
-                                    axis.text.y = element_text(size=10),
-                                    axis.title.x = element_text(face="bold",size=12),
-                                    axis.title.y = element_text(face="bold",size=12),
-                                    legend.title = element_text(face="bold",size=11),
-                                    legend.text  = element_text(size=9))
-plot2
-
-### Cluster 3
-cluster3 <- lapply(1:length(cluster3), function(i)
-{
-  time.df <- data.frame(Date=index(cluster3[[i]]), Peso_racimo=coredata(cluster3[[i]])); time.df$Finca <- names(cluster3)[[i]]
-  return(time.df)
-})
-cluster3 <- Reduce(function(...) rbind(..., deparse.level=1), cluster3)
-
-plot3 <- ggplot(cluster3, aes(x=Date, y=Peso_racimo, colour=Finca)) + geom_line()
-plot3 <- plot3 + xlab('Fecha') + ylab('Peso del racimo (kg)') + ggtitle('Cluster 3')
-plot3 <- plot3 + theme_bw() + theme(panel.background = element_blank(),
-                                    panel.grid.major.x = element_blank(),
-                                    panel.grid.minor.x = element_blank(),
-                                    panel.grid.major.y = element_blank(),
-                                    panel.grid.minor.y = element_blank(),
-                                    title = element_text(face='bold',size=15),
-                                    axis.text.x = element_text(size=10),
-                                    axis.text.y = element_text(size=10),
-                                    axis.title.x = element_text(face="bold",size=12),
-                                    axis.title.y = element_text(face="bold",size=12),
-                                    legend.title = element_text(face="bold",size=11),
-                                    legend.text  = element_text(size=9))
-plot3
