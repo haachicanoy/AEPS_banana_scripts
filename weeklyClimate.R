@@ -117,7 +117,7 @@ ggsave(filename='C:/Users/haachicanoy/Desktop/peso_racimo_patterns.pdf', plot=pl
 
 # convert -verbose -density 300 Fig1.pdf -quality 100 -sharpen 0x1.0 -alpha off Fig1.png # From Julian
 # system("convert -verbose -density 300 C:/Users/haachicanoy/Desktop/peso_racimo_patterns.pdf -quality 100 -sharpen 0x1.0 -alpha off C:/Users/haachicanoy/Desktop/peso_racimo_patterns.png")
-# system("convert -verbose -density 300 /home/hachicanoy/Histogram.pdf -quality 100 -sharpen 0x1.0 -alpha off /home/hachicanoy/Histogram.png", wait=TRUE)
+# system("convert -verbose -density 300 /home/hachicanoy/peso_racimo_patterns.pdf -quality 100 -sharpen 0x1.0 -alpha off /home/hachicanoy/peso_racimo_patterns.png", wait=TRUE) # Works!!!
 
 farms <- sort(unique(as.character(harvest$Finca)))
 harvest <- lapply(1:length(farms), function(i)
