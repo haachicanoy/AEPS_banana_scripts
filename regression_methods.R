@@ -57,7 +57,7 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('banasan_cosechas_suelo_foliar_AEPS_corrected.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- read.csv('cobana_cosechas_fertilizaciones_clima_cycle.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -103,7 +103,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_informe_final', sep='')
-runID <- paste(wkDir, '/_run21_cobana_cosechas_sin_fert_clima_ciclo_completo', sep='')
+runID <- paste(wkDir, '/_run1', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
