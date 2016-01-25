@@ -83,10 +83,11 @@ dataSet <- dataSet[,c("Arena_perc","Limo_perc","Arcilla_perc",
 dataSet <- dataSet[,c(24:35)]
 
 dataSet$splitVar <- 'All' # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
+dataSet <- dataSet[,c(names(dataSet)[1:11],'splitVar','Peso_racimo')]
 
 inputs  <- 1:11  # inputs columns
-output  <- 12    # output column
-segme   <- 13    # split column; In case of exists variety variable USE IT HERE
+segme   <- 12    # split column; In case of exists variety variable USE IT HERE
+output  <- 13    # output column
 
 namsDataSet <- names(dataSet)
 
