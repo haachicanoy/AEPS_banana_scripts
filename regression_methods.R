@@ -119,7 +119,9 @@ createFolders(dirFol, variety)
 # ----------------------------------------------------------------------------------------------------------------- #
 
 environment(descriptiveGraphics) <- .GlobalEnv
-descriptiveGraphics(variety="All", dataSet=dataSet, inputs=inputs, segme=segme, output=output, smooth=TRUE, ylabel="Peso del racimo (kg)", smoothInd=NULL, ghrp="box", res=NA, sztxt=15, szlbls=15, colbox="skyblue", colpts="greenyellow", colsmot="red", szpts=4, szdts=1.5)
+descriptiveGraphics(variety="All", dataSet=dataSet, inputs=inputs, segme=segme, output=output, smooth=TRUE,
+                    ylabel="Peso del racimo (kg)", smoothInd=NULL, ghrp="box", res=NA, sztxt=15, szlbls=15,
+                    colbox="skyblue", colpts="greenyellow", colsmot="red", szpts=4, szdts=1.5)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # DataSets ProcesosF; parallelize processes usign caret R package
@@ -143,7 +145,8 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # Run Random Forest
 # ----------------------------------------------------------------------------------------------------------------- #
 
-randomForestFun(variety, nb.it=100, ncores=23)
+nCor <- detectCores(all.tests=FALSE, logical=FALSE)-1
+randomForestFun(variety, nb.it=10, ncores=nCor)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
