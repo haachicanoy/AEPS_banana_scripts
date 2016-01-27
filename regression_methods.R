@@ -118,7 +118,8 @@ createFolders(dirFol, variety)
 # Descriptive analysis
 # ----------------------------------------------------------------------------------------------------------------- #
 
-descriptiveGraphics("All", dataSet, inputs=inputs, segme=segme, output=output, smooth=T, ylabel="Peso del racimo (kg)", smoothInd=NULL, ghrp="box")
+environment(descriptiveGraphics) <- .GlobalEnv
+descriptiveGraphics(variety="All", dataSet=dataSet, inputs=inputs, segme=segme, output=output, smooth=TRUE, ylabel="Peso del racimo (kg)", smoothInd=NULL, ghrp="box", res=NA, sztxt=15, szlbls=15, colbox="skyblue", colpts="greenyellow", colsmot="red", szpts=4, szdts=1.5)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # DataSets ProcesosF; parallelize processes usign caret R package
@@ -136,7 +137,7 @@ lineaRegresionFun(variety, dirLocation=paste0(getwd(),"/"), ylabs="Peso del raci
 # Run Multilayer perceptron
 # ----------------------------------------------------------------------------------------------------------------- #
 
-multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Peso del racimo (kg)", pertuRelevance=T, ncores=23)
+multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylabs="Peso del racimo (kg)", pertuRelevance=T, ncores=10)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Random Forest
