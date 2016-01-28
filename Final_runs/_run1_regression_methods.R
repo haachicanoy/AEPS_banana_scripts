@@ -68,7 +68,7 @@ names(dataSet) # With this command you can see all variable names in the origina
 # Following code shows the variables that are selected
 rownames(dataSet) <- dataSet$ID
 dataSet$ID <- NULL
-dataSet <- dataSet[,c("fechaCosecha","Year","Week",                                                                        # Date ID
+dataSet <- dataSet[,c("fechaCosecha",                                                                                      # Date ID; "Year","Week",
                       "Arena_perc","Limo_perc","Arcilla_perc",                                                             # Soil
                       "pH","Soil_MO_perc","Soil_P_ppm","Soil_S_ppm",                                                       # Soil
                       "Soil_K_meq.100g","Soil_Ca_meq.100g",
@@ -100,9 +100,9 @@ dataSet <- data.frame(dataSet[,1:(ncol(dataSet)-1)],
                       splitVar=rep('All', nrow(dataSet)), # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
                       Peso_racimo=dataSet[,ncol(dataSet)])
 
-inputs  <- 1:72  # inputs columns
-segme   <- 73    # split column; In case of exists variety variable USE IT HERE
-output  <- 74    # output column
+inputs  <- 1:70  # inputs columns
+segme   <- 71    # split column; In case of exists variety variable USE IT HERE
+output  <- 72    # output column
 
 namsDataSet <- names(dataSet)
 

@@ -68,7 +68,7 @@ names(dataSet) # With this command you can see all variable names in the origina
 # Following code shows the variables that are selected
 rownames(dataSet) <- dataSet$ID
 dataSet$ID <- NULL
-dataSet <- dataSet[,c("fechaCosecha","Year","Week",                                                                        # Date ID
+dataSet <- dataSet[,c("fechaCosecha",                                                                                      # Date ID; "Year","Week",
                       "Arena_perc","Limo_perc","Arcilla_perc",                                                             # Soil
                       "pH","Soil_MO_perc","Soil_P_ppm","Soil_S_ppm",                                                       # Soil
                       "Soil_K_meq.100g","Soil_Ca_meq.100g",
@@ -98,9 +98,9 @@ dataSet <- data.frame(dataSet[,1:(ncol(dataSet)-1)],
                       splitVar=rep('All', nrow(dataSet)), # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
                       Peso_racimo=dataSet[,ncol(dataSet)])
 
-inputs  <- 1:50  # inputs columns
-segme   <- 51    # split column; In case of exists variety variable USE IT HERE
-output  <- 52    # output column
+inputs  <- 1:48  # inputs columns
+segme   <- 49    # split column; In case of exists variety variable USE IT HERE
+output  <- 50    # output column
 
 namsDataSet <- names(dataSet)
 
@@ -117,7 +117,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_informe_final', sep='')
-runID <- paste(wkDir, '/_run2', sep='')
+runID <- paste(wkDir, '/_run3', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 

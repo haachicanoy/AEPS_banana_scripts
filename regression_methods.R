@@ -104,7 +104,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_informe_final', sep='')
-runID <- paste(wkDir, '/_run1', sep='')
+runID <- paste(wkDir, '/_run2', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
@@ -145,7 +145,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # ----------------------------------------------------------------------------------------------------------------- #
 
 nCor <- detectCores(all.tests=FALSE, logical=FALSE)-1
-randomForestFun(variety, nb.it=100, ncores=nCor)
+randomForestFun(variety, nb.it=10, ncores=nCor)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
