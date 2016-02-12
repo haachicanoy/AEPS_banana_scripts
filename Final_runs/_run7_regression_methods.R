@@ -58,21 +58,11 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('banasan_cosechas_suelo_foliar_clima_cycle_corrected.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 library(readxl)
-# Exploración de todos los datos de cosecha-banasan
-dataSet <- read_excel(path='Z:/DATOS_PROCESADOS/Banasan_data_GC.xlsx', sheet='Cosechas')
-dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
-g <- ggplot(data=dataSet[dataSet$Peso_racimo>0,], aes(x=Peso_racimo, colour=as.factor(Finca))) + geom_density(); g
+tempDF <- read_excel(path='', sheet='')
+dataSet <- read.csv('banasan_cosechas_suelo_foliar_clima_cycle_corrected.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 
-# Exploración de todos los datos de cosecha-cobana
-dataSet <- read_excel(path='Z:/DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
-g <- ggplot(data=dataSet[dataSet$Peso_racimo>0,], aes(x=Peso_racimo, colour=as.factor(Year_cosecha))) + stat_ecdf(); g # geom_density()
-
-str(dataSet)
-dataSet$Merma <- as.numeric(dataSet$Merma)
-pairs(dataSet[,3:ncol(dataSet)])
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Select variables to analyse from database
@@ -172,7 +162,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # ----------------------------------------------------------------------------------------------------------------- #
 
 nCor <- detectCores(all.tests=FALSE, logical=FALSE)-1
-randomForestFun(variety, nb.it=10, ncores=nCor, HQplots=TRUE)
+randomForestFun(variety, nb.it=200, ncores=nCor)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
