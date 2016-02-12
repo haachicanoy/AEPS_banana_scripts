@@ -59,7 +59,9 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # ----------------------------------------------------------------------------------------------------------------- #
 
 library(readxl)
-tempDF <- read_excel(path='', sheet='')
+tempDF <- read_excel(path='Z:/DATOS_PROCESADOS/DATA CIAT_actualizacion_07-12-2015.xlsx', sheet='Cosechas')
+tempDF <- tempDF[grep(pattern='^6T*', x=tempDF$`Id Lote`),]; rownames(tempDF) <- 1:nrow(tempDF)
+tempDF[,47:ncol(tempDF)]
 dataSet <- read.csv('banasan_cosechas_suelo_foliar_clima_cycle_corrected.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
