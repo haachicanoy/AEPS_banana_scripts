@@ -58,10 +58,16 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-library(readxl)
-tempDF <- read_excel(path='Z:/DATOS_PROCESADOS/DATA CIAT_actualizacion_07-12-2015.xlsx', sheet='Cosechas')
-tempDF <- tempDF[grep(pattern='^6T*', x=tempDF$`Id Lote`),]; rownames(tempDF) <- 1:nrow(tempDF)
-tempDF[,47:ncol(tempDF)]
+tempDF <- read.csv('samaria_cosechas.csv')
+tempDF$Id_Lote <- as.character(tempDF$Id_Lote)
+tempDF_finca <- tempDF[which(nchar(tempDF$Id_Lote)==4),]
+tempDF_lote <- tempDF[which(nchar(tempDF$Id_Lote)!=4),]
+rm(tempDF)
+ggplot(data=tempDF_finca[tempDF_finca$Peso_racimo>0,], aes(x=Peso_racimo)) + geom_histogram()
+ggplot(data=tempDF_lote[tempDF_lote$Peso_racimo>0,], aes(x=Peso_racimo)) + geom_histogram() # stat_ecdf()
+
+
+pairs(tempDF[,c(43,47:ncol(tempDF))])
 dataSet <- read.csv('banasan_cosechas_suelo_foliar_clima_cycle_corrected.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
 
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
