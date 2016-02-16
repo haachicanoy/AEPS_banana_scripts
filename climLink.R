@@ -26,7 +26,7 @@ wkDir <- paste(dirFol); setwd(wkDir)
 # Read database (change according necesities)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/samaria_cosechas_lote.csv')
+baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/_samaria/samaria_cosechas_lote.csv')
 # baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 baseManejo <- as.data.frame(baseManejo)
 baseManejo$ID <- paste(baseManejo$Id_Lote,'-',baseManejo$Year,'-',baseManejo$Week,sep='')
@@ -103,7 +103,7 @@ namFec         <- c("fechaSiembra","fechaCosecha") # Nombres de la fecha de siem
 
 a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
                              periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejo,
-                             namFecha=namFec, climBase=baseClima, onePhase=FALSE)
+                             namFecha=namFec, climBase=baseClima, onePhase=TRUE)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Save results
@@ -112,4 +112,4 @@ a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
 wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 a <- data.frame(baseManejo,a)
 a <- a[,c(1:41,47:57,42:44)]
-write.csv(a,"samaria_cosechas_lote_clima_cycle.csv", row.names=FALSE)
+write.csv(a,"samaria_cosechas_finca_clima_cycle.csv", row.names=FALSE)
