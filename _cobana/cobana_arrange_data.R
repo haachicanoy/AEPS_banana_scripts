@@ -267,7 +267,7 @@ cosechasSiembras <- base::merge(x=cosechas, y=siembras, by=c('IDFinca','Year','W
 cosechasSiembras <- cosechasSiembras[which(!is.na(cosechasSiembras$Date)),]
 rownames(cosechasSiembras) <- 1:nrow(cosechasSiembras)
 
-write.csv(cosechasFert, './DATOS_PROCESADOS/_cosecha/_cobana/cobana_siembras.csv', row.names=FALSE)
+write.csv(cosechasSiembras, './DATOS_PROCESADOS/_cosecha/_cobana/cobana_siembras.csv', row.names=FALSE)
 
 # ggplot(data=cosechasSiembras, aes(x=reorder(seed_type, Peso_racimo, FUN=median), y=Peso_racimo, colour=variety)) + geom_jitter(position=position_jitter(0.2), shape=17, size=3)
 # ggplot(data=cosechasSiembras, aes(x=seeds_acum, y=Peso_racimo, colour=Finca)) + geom_point(cex=3)

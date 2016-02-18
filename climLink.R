@@ -26,7 +26,7 @@ wkDir <- paste(dirFol); setwd(wkDir)
 # Read database (change according necesities)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/_samaria/samaria_cosechas_lote.csv')
+baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/_cobana/cobana_siembras.csv')
 # baseManejo <- read_excel('./DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
 baseManejo <- as.data.frame(baseManejo)
 baseManejo$ID <- paste(baseManejo$Id_Lote,'-',baseManejo$Year,'-',baseManejo$Week,sep='')
@@ -43,7 +43,8 @@ baseManejo$Date <- x
 baseManejo <- baseManejo[which(!is.na(baseManejo$Date)),]
 rm(x)
 
-baseManejo <- baseManejo[,c(62, 63, 9, 11, 22:58, 59:61)]
+baseManejo <- baseManejo[,c(1, 22:25, 20, 26)]
+colnames(baseManejo)[7] <- 'fechaCosecha'
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Load climate functions
@@ -56,7 +57,7 @@ source('./RESULTADOS/Modelling/_scripts/climFunctions.R')
 # Set climate directory
 # ----------------------------------------------------------------------------------------------------------------- #
 
-climDir <- paste(dirFol,'/DATOS_PROCESADOS/_clima/Tecbaco/Climate_to', sep='')
+climDir <- paste(dirFol,'/DATOS_PROCESADOS/_clima/IDEAM/Climate_to', sep='') # /DATOS_PROCESADOS/_clima/Tecbaco/Climate_to
 setwd(climDir)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -103,13 +104,13 @@ namFec         <- c("fechaSiembra","fechaCosecha") # Nombres de la fecha de siem
 
 a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
                              periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejo,
-                             namFecha=namFec, climBase=baseClima, onePhase=TRUE)
+                             namFecha=namFec, climBase=baseClima, onePhase=FALSE)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Save results
 # ----------------------------------------------------------------------------------------------------------------- #
 
-wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
+wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha/_cobana/', sep=''); setwd(wkDir)
 a <- data.frame(baseManejo,a)
 a <- a[,c(1:41,47:57,42:44)]
-write.csv(a,"samaria_cosechas_finca_clima_cycle.csv", row.names=FALSE)
+write.csv(a, "cobana_siembras_clima_cycle.csv", row.names=FALSE)
