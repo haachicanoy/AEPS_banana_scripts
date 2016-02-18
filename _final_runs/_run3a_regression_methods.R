@@ -58,63 +58,22 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('banasan_cosechas_suelo_foliar_clima_cycle_corrected.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
-library(readxl)
-# Exploración de todos los datos de cosecha-banasan
-dataSet <- read_excel(path='Z:/DATOS_PROCESADOS/Banasan_data_GC.xlsx', sheet='Cosechas')
+dataSet <- read.csv('./_cobana/cobana_fertilizaciones_clima.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- dataSet[,c(2:4, 10:ncol(dataSet), 5)]
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
-g <- ggplot(data=dataSet[dataSet$Peso_racimo>0,], aes(x=Peso_racimo, colour=as.factor(Finca))) + geom_density(); g
-
-# Exploración de todos los datos de cosecha-cobana
-dataSet <- read_excel(path='Z:/DATOS_PROCESADOS/Cobana_data.xlsx', sheet='Cosechas')
-dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
-g <- ggplot(data=dataSet[dataSet$Peso_racimo>0,], aes(x=Peso_racimo, colour=as.factor(Year_cosecha))) + stat_ecdf(); g # geom_density()
-
-str(dataSet)
-dataSet$Merma <- as.numeric(dataSet$Merma)
-pairs(dataSet[,3:ncol(dataSet)])
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Select variables to analyse from database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-names(dataSet) # With this command you can see all variable names in the original dataset
-# Following code shows the variables that are selected
-rownames(dataSet) <- dataSet$ID
-dataSet$ID <- NULL
-dataSet <- dataSet[,c("fechaCosecha",                                                                                      # Date ID; "Year","Week",
-                      "Arena_perc","Limo_perc","Arcilla_perc",                                                             # Soil
-                      "pH","Soil_MO_perc","Soil_P_ppm","Soil_S_ppm",                                                       # Soil
-                      "Soil_K_meq.100g","Soil_Ca_meq.100g",
-                      "Soil_Mg_meq.100g","Soil_Na_meq.100g",
-                      "Soil_Fe_meq.100g","Soil_Mn_meq.100g",
-                      "Soil_Cu_meq.100g","Soil_Zn_meq.100g",
-                      "Soil_B_meq.100g","Soil_Perc_sat.K",
-                      "Soil_Perc_sat.Ca","Soil_Perc_sat.Mg",
-                      "Soil_Perc_sat.Na","Soil_Perc_sat.Al",
-                      "Foliar_N_perc","Foliar_P_perc",
-                      "Foliar_K_perc","Foliar_Ca_perc",
-                      "Foliar_Mg_perc","Foliar_S_perc",
-                      "Foliar_Cl_perc","Foliar_Fe_ug.g.1",
-                      "Foliar_Mn_ug.g.1","Foliar_Cu_ug.g.1",
-                      "Foliar_Zn_ug.g.1","Foliar_B_ug.g.1",
-                      "Foliar_Na_ug.g.1","Foliar_Perc_Sat.K",
-                      "Foliar_Perc_Sat.Ca","Foliar_Perc_Sat.Mg",
-                      "TX_avg_CYCLE","TM_avg_CYCLE","T_avg_CYCLE",
-                      "Diurnal_Range_avg_CYCLE","TX_freq_34_CYCLE",
-                      "TM_freq_20_CYCLE","P_accu_CYCLE","P_10_freq_CYCLE",
-                      "P_inf7_freq_CYCLE","RH_avg_CYCLE","SR_accu_CYCLE",
-                      "Peso_racimo")] # Merma, Racimos_cosechar_area
-dataSet$fechaCosecha <- as.Date(as.character(dataSet$fechaCosecha), "%m/%d/%y")
-dataSet <- dataSet[,c(2:ncol(dataSet))]
-
 dataSet <- data.frame(dataSet[,1:(ncol(dataSet)-1)],
                       splitVar=rep('All', nrow(dataSet)), # In case of exists variety variable doesn't run this line and use that variable like segmentation variable
                       Peso_racimo=dataSet[,ncol(dataSet)])
+dataSet <- dataSet[dataSet$Peso_racimo>0,]
 
-inputs  <- 1:48  # inputs columns
-segme   <- 49    # split column; In case of exists variety variable USE IT HERE
-output  <- 50    # output column
+inputs  <- 1:36  # inputs columns
+segme   <- 37    # split column; In case of exists variety variable USE IT HERE
+output  <- 38    # output column
 
 namsDataSet <- names(dataSet)
 
@@ -131,7 +90,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_informe_final', sep='')
-runID <- paste(wkDir, '/_run3', sep='')
+runID <- paste(wkDir, '/_run3a', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 
@@ -172,7 +131,7 @@ multilayerPerceptronFun(variety, dirLocation=paste0(getwd(),"/"), nb.it=30, ylab
 # ----------------------------------------------------------------------------------------------------------------- #
 
 nCor <- detectCores(all.tests=FALSE, logical=FALSE)-1
-randomForestFun(variety, nb.it=10, ncores=nCor, HQplots=TRUE)
+randomForestFun(variety, nb.it=200, ncores=nCor)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Run Conditional Forest; especify if you have categorical variables
