@@ -58,8 +58,8 @@ wkDir <- paste(dirFol, '/DATOS_PROCESADOS/_cosecha', sep=''); setwd(wkDir)
 # Read database
 # ----------------------------------------------------------------------------------------------------------------- #
 
-dataSet <- read.csv('./all_clima.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
-dataSet <- dataSet[,c(9:ncol(dataSet), 4)]
+dataSet <- read.csv('./all_clima_cycle.csv') # Change according database to analyse. It could be included climate, soils, foliar, etc. information
+dataSet <- dataSet[,c(8:ncol(dataSet), 4)]
 dataSet <- dataSet[complete.cases(dataSet),]; rownames(dataSet) <- 1:nrow(dataSet)
 
 # ----------------------------------------------------------------------------------------------------------------- #
@@ -71,9 +71,9 @@ dataSet <- data.frame(dataSet[,1:(ncol(dataSet)-1)],
                       Peso_racimo=dataSet[,ncol(dataSet)])
 dataSet <- dataSet[dataSet$Peso_racimo>0,]
 
-inputs  <- 1:33  # inputs columns
-segme   <- 34    # split column; In case of exists variety variable USE IT HERE
-output  <- 35    # output column
+inputs  <- 1:11  # inputs columns
+segme   <- 12    # split column; In case of exists variety variable USE IT HERE
+output  <- 13    # output column
 
 namsDataSet <- names(dataSet)
 
@@ -90,7 +90,7 @@ if(length(variety0)==1){variety = variety0 }else{variety = factor(c(variety0,"Al
 variety <- 'All' # Omit this line in case of exists more than 1 variety
 
 wkDir <- paste(dirFol, '/RESULTADOS/Modelling/_informe_final', sep='')
-runID <- paste(wkDir, '/_run5', sep='')
+runID <- paste(wkDir, '/_run6', sep='')
 if(!dir.exists(runID)){cat('Creating run directory\n'); dir.create(runID)} else {cat('Run directory exists\n')}
 setwd(runID)
 

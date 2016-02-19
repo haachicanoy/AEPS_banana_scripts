@@ -19,32 +19,23 @@ library(readxl)
 
 dirFol  <- "/mnt/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
 # dirFol <- "//dapadfs/workspace_cluster_6/TRANSVERSAL_PROJECTS/MADR/COMPONENTE_2/ASBAMA"
-# dirFol <- 'Z:/'
+dirFol <- 'Z:/'
 wkDir <- paste(dirFol); setwd(wkDir)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Read database (change according necesities)
 # ----------------------------------------------------------------------------------------------------------------- #
 
-baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/_cobana/cobana_siembras.csv')
-# baseManejo <- read_excel('./DATOS_PROCESADOS/_cosecha/all.xlsx', sheet=1)
+# baseManejo <- read.csv('./DATOS_PROCESADOS/_cosecha/_cobana/cobana_siembras.csv')
+baseManejo <- read_excel('./DATOS_PROCESADOS/_cosecha/all.xlsx', sheet=1)
 baseManejo <- as.data.frame(baseManejo)
-baseManejo$ID <- paste(baseManejo$Id_Lote,'-',baseManejo$Year,'-',baseManejo$Week,sep='')
-for(i in 1:nrow(baseManejo))
-{
-  if(nchar(baseManejo$Week[i])==1){
-    baseManejo$Week[i] <- paste('0',baseManejo$Week[i],sep='')
-  }
-}; rm(i)
-baseManejo$Date <- paste(baseManejo$Year,'-',baseManejo$Week,sep='')
-x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
-x <- x[match(baseManejo$Date, format(x, "%Y-%U"))]
-baseManejo$Date <- x
-baseManejo <- baseManejo[which(!is.na(baseManejo$Date)),]
-rm(x)
+names(baseManejo) <- c('IDLote', 'Year', 'Week', 'Peso_racimo', 'Date')
+baseManejo$Date <- as.Date(baseManejo$Date, format='%Y-%m-%d')
+names(baseManejo)[length(names(baseManejo))] <- 'fechaCosecha'
+baseManejo$fechaSiembra <- as.Date(baseManejo$fechaCosecha-267)
 
-baseManejo <- baseManejo[,c(1, 22:25, 20, 26)]
-colnames(baseManejo)[7] <- 'fechaCosecha'
+baseManejoGua <- baseManejo[grep(pattern='^6T', x=baseManejo$IDLote),]; rownames(baseManejoGua) <- 1:nrow(baseManejoGua)
+baseManejoMag <- baseManejo[setdiff(1:nrow(baseManejo), grep(pattern='^6T', x=baseManejo$IDLote)),]; rownames(baseManejoMag) <- 1:nrow(baseManejoMag)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Load climate functions
@@ -57,33 +48,26 @@ source('./RESULTADOS/Modelling/_scripts/climFunctions.R')
 # Set climate directory
 # ----------------------------------------------------------------------------------------------------------------- #
 
-climDir <- paste(dirFol,'/DATOS_PROCESADOS/_clima/IDEAM/Climate_to', sep='') # /DATOS_PROCESADOS/_clima/Tecbaco/Climate_to
-setwd(climDir)
+climDir1 <- paste(dirFol,'/DATOS_PROCESADOS/_clima/IDEAM/Climate_to', sep='') # /DATOS_PROCESADOS/_clima/Tecbaco/Climate_to
+climDir2 <- paste(dirFol,'/DATOS_PROCESADOS/_clima/Tecbaco/Climate_to', sep='') # /DATOS_PROCESADOS/_clima/Tecbaco/Climate_to
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Read original climate files
 # ----------------------------------------------------------------------------------------------------------------- #
 
-climFiles <- list.files(path=getwd(), pattern='.txt$', full.names=TRUE)
-climOrder <- gsub(pattern='.txt$', replacement='', x=list.files(path=getwd(), pattern='.txt$', full.names=FALSE))
+climFiles <- list.files(path=climDir1, pattern='.txt$', full.names=TRUE)
+climOrder <- gsub(pattern='.txt$', replacement='', x=list.files(path=climDir1, pattern='.txt$', full.names=FALSE))
 
-baseClima <- unifDatos(climFiles=climFiles, namesC=climOrder)
-baseClima$FECHA <- as.Date(baseClima$FECHA, format='%Y-%m-%d')
+baseClima1 <- unifDatos(climFiles=climFiles, namesC=climOrder)
+baseClima1$FECHA <- as.Date(baseClima1$FECHA, format='%Y-%m-%d')
 
-# ----------------------------------------------------------------------------------------------------------------- #
-# Fix date format
-# ----------------------------------------------------------------------------------------------------------------- #
+climFiles <- list.files(path=climDir2, pattern='.txt$', full.names=TRUE)
+climOrder <- gsub(pattern='.txt$', replacement='', x=list.files(path=climDir2, pattern='.txt$', full.names=FALSE))
 
-x <- seq(from=as.Date("2000-01-01", format='%Y-%m-%d'), to=as.Date("2015-12-31", format='%Y-%m-%d'), by='day')
-x <- x[match(paste(baseManejo$Year, '-', baseManejo$Week, sep=''), format(x, "%Y-%U"))]
+baseClima2 <- unifDatos(climFiles=climFiles, namesC=climOrder)
+baseClima2$FECHA <- as.Date(baseClima2$FECHA, format='%Y-%m-%d')
 
-baseManejo$fechaCosecha <- x; rm(x)
-baseManejo <- baseManejo[which(!is.na(baseManejo$fechaCosecha)),]
-baseManejo$fechaSiembra <- as.Date(baseManejo$fechaCosecha-267)
-rownames(baseManejo) <- 1:nrow(baseManejo)
-
-baseManejo$fechaCosecha <- as.Date(as.character(baseManejo$fechaCosecha), format='%Y-%m-%d')
-baseManejo$fechaSiembra <- as.Date(as.character(baseManejo$fechaSiembra), format='%Y-%m-%d')
+rm(climFiles, climOrder, climDir1, climDir2)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Create climate indicators by phenological crop phase
@@ -102,15 +86,23 @@ FaseCultivo    <- c("DIFF","FLOW","DEVL")   # Nombre corto por etapas de cultivo
 diasPorFase    <- c(154, 35, 78)               # Dias de cada etapa                   Default values: diasPorFase <- <- c(48,41,31)
 namFec         <- c("fechaSiembra","fechaCosecha") # Nombres de la fecha de siembra       Default values: namFec <- c("fecha_siembra","fecha_cosecha")
 
-a <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
-                             periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejo,
-                             namFecha=namFec, climBase=baseClima, onePhase=FALSE)
+a1 <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
+                              periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejoMag,
+                              namFecha=namFec, climBase=baseClima1, onePhase=FALSE)
+a2 <- climIndicatorsGenerator(climVar=climVar, namFun=namFun, Fase=FaseCultivo,
+                              periodcul=periodBase, diasFase=diasPorFase, cosechBase=baseManejoGua,
+                              namFecha=namFec, climBase=baseClima2, onePhase=FALSE)
 
 # ----------------------------------------------------------------------------------------------------------------- #
 # Save results
 # ----------------------------------------------------------------------------------------------------------------- #
 
-wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha/_cobana/', sep=''); setwd(wkDir)
-a <- data.frame(baseManejo,a)
-a <- a[,c(1:41,47:57,42:44)]
-write.csv(a, "cobana_siembras_clima_cycle.csv", row.names=FALSE)
+wkDir <- paste(dirFol,'/DATOS_PROCESADOS/_cosecha/', sep=''); setwd(wkDir)
+
+a1 <- data.frame(baseManejoMag, a1)
+a2 <- data.frame(baseManejoGua, a2)
+
+a <- rbind(a1, a2)
+a <- a[complete.cases(a),]
+
+write.csv(a, "all_clima_cycle.csv", row.names=FALSE)
