@@ -15,7 +15,10 @@ cluster_map[][nullCells] <- NA; rm(nullCells)
 # Climate stations coordinates
 clim_station <- read.csv('Z:/DATOS_PROCESADOS/_clima/climate_stations_cluster.csv')
 
-# Make beautiful map
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+# Make beautiful map CLUSTERS + CLIMATE STATIONS
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
 pal <- colorNumeric(brewer.pal(4, 'Set2'), domain=as.numeric(names(table(values(cluster_map)))), na.color="transparent")
 m <- leaflet(clim_station) %>% addTiles() %>% setView(lng=-73, lat=10.5, zoom=7) %>% addProviderTiles("Acetate.terrain") # Acetate.terrain, MapQuestOpen.Aerial, Esri.WorldImagery, HikeBike.HikeBike
 m <- m %>% addRasterImage(cluster_map, colors=pal, opacity=0.60, project=FALSE) %>% addLegend(pal=pal, values=as.numeric(names(table(values(cluster_map)))), title="Zonas edafoclimáticas")
@@ -24,5 +27,25 @@ m <- m %>% addCircleMarkers(~Lon, ~Lat, popup = ~Station, radius = ~ifelse(type=
 # m <- m %>% addMarkers(~Lon, ~Lat, popup = ~Station, markerOptions(clickable=FALSE))
 m
 
-saveWidget(m, "temp.html", selfcontained=FALSE)
-webshot("temp.html", file="Rplot.png", cliprect="viewport")
+saveWidget(m, "Z:/DOCUMENTOS/clusters_stations.html", selfcontained=FALSE)
+# webshot("temp.html", file="Rplot.png", cliprect="viewport")
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+# Make beatiful maps FARMS BY COMERCIALIZADORA
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# pal <- colorNumeric(brewer.pal(4, 'Set2'), domain=as.numeric(names(table(values(cluster_map)))), na.color="transparent")
+clim_station2 <- clim_station[clim_station$comercializadora!='clim',]
+rownames(clim_station2) <- 1:nrow(clim_station2)
+clim_station2$comercializadora <- as.character(clim_station2$comercializadora)
+
+pal <- colorNumeric(brewer.pal(4, 'Set2'), domain=as.numeric(names(table(values(cluster_map)))), na.color="transparent")
+m <- leaflet(clim_station2) %>% addTiles() %>% setView(lng=-73, lat=10.5, zoom=7) %>% addProviderTiles("Acetate.terrain") # Acetate.terrain, MapQuestOpen.Aerial, Esri.WorldImagery, HikeBike.HikeBike
+m <- m %>% addRasterImage(cluster_map, colors=pal, opacity=0.60, project=FALSE) %>% addLegend(pal=pal, values=as.numeric(names(table(values(cluster_map)))), title="Zonas edafoclimáticas")
+pal2 <- colorFactor(c("navy", "forestgreen", "red"), domain = c("Banasan", "Cobana", "La Samaria"))
+m <- m %>% addCircleMarkers(~Lon, ~Lat, popup=~Station, radius=rep(4.5, 3), color=~pal2(comercializadora), stroke=FALSE, fillOpacity=0.8)
+# m <- m %>% addLegend(pal=pal2, values=as.numeric(names(table(values(cluster_map)))), title="Zonas edafoclimáticas")
+# m <- m %>% addMarkers(~Lon, ~Lat, popup = ~Station, markerOptions(clickable=FALSE))
+m
+
+saveWidget(m, "Z:/DOCUMENTOS/clusters_farms.html", selfcontained=FALSE)
