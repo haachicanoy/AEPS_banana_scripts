@@ -49,3 +49,11 @@ m <- m %>% addCircleMarkers(~Lon, ~Lat, popup=~Station, radius=rep(4.5, 3), colo
 m
 
 saveWidget(m, "Z:/DOCUMENTOS/clusters_farms.html", selfcontained=FALSE)
+
+# Colour palette
+library(RColorBrewer)
+f <- function(pal) brewer.pal(brewer.pal.info[pal, "maxcolors"], pal)
+(cols <- f("Set2"))
+
+col2rgb(cols, alpha=FALSE)
+
