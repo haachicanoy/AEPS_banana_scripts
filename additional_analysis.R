@@ -167,3 +167,105 @@ p
 # Biplot of individuals and variables
 fviz_pca_biplot(samaria_lote_pca, geom="point") + theme_bw()
 
+
+
+# Time series of peso del racimo
+
+library(readxl)
+
+all <- read.csv('Z:/DATOS_PROCESADOS/_cosecha/all_clima.csv')
+library(ggplot2)
+
+all$fechaCosecha <- as.Date(as.character(all$fechaCosecha))
+all$Peso_racimo2 <- scale(all$Peso_racimo)
+
+ggplot(data=all, aes(x=fechaCosecha, y=Peso_racimo, colour=IDLote)) + geom_line() + theme_bw()
+
+
+
+
+
+
+
+
+library(ClustOfVar)
+
+#quantitative variables
+data(decathlon)
+tree <- hclustvar(decathlon[,1:10])
+plot(tree)
+#qualitative variables with missing values
+data(vnf)
+tree_NA <- hclustvar(X.quali=vnf)
+plot(tree_NA)
+dev.new()
+vnf2<-na.omit(vnf)
+tree <- hclustvar(X.quali=vnf2)
+plot(tree)
+#mixture of quantitative and qualitative variables
+data(wine)
+X.quanti <- wine[,c(3:29)]
+X.quali <- wine[,c(1,2)]
+tree <- hclustvar(X.quanti,X.quali)
+plot(tree)
+stab<-stability(tree, B=20)
+plot(stab, nmax=7)
+
+
+library(cluster)
+daisy()
+pam()
+
+setwd("Z:/DATOS_PROCESADOS/_cosecha/_cobana") 
+library("cluster")
+# import and prepare data
+myData <- read.csv(file='cobana_fertilizaciones.csv')
+myData <- myData[,c("Year","Week","Finca","Racimos_cosechar_area","Merma","Recobro","Embolsados_lote","Perc_corta","Perc_premio","Ratio_premio",
+                    "Ratio_total","Cajas_corta","Cajas_premio","Cajas_total","Peso_racimo","Grado","fertilizaciones","tipo_abono","tipo_aplicacion_fert")]
+# make distance matrix
+mydm <- daisy(myData)
+cobana_clust  <- agnes(mydm, method="weighted")
+plot(cobana_clust,  which.plot=2)
+si1 <- silhouette(cutree(cobana_clust, k=8), daisy(myData))
+plot(si1, nmax=120, cex.names=0.5)
+abline(v=0.5, col=2)
+
+summary(cobana_clust)
+
+# do a whole range of clustering analyses 
+fromk <- 1
+tok <- 35
+myresult <- data.frame() 
+myarray <- array(c(fromk:tok)) 
+myresult <- apply(myarray, 1, pam, x=mydm) 
+# collect and plot scores
+widthes <- matrix(data=NA, nrow=tok, ncol=2) 
+colnames(widthes) <- c("k","width") 
+for (i in fromk:tok) 
+{ 
+  widthes[i,1] <- i 
+  if (i>1) 
+  { 
+    widthes[i,2] <- myresult[[i]]$silinfo$avg.width 
+  } 
+} 
+plot(widthes[,2] ~ widthes[,1]) 
+widthes
+# write results, in this case of k = 5
+write.table(unlist(myresult[5])$clustering, file="outfilename", sep="\t")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
