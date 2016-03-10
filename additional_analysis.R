@@ -23,6 +23,7 @@ rm(sc1, sc2, sc3)
 
 library(ggplot2)
 
+# ECDF by scenario
 g <- ggplot(data=scenarios, aes(x=peso_racimo, colour=scenario)) + stat_ecdf(size=1.2)
 g <- g + xlab('Peso del racimo (kg)') + ylab('Densidad acumulada')
 g <- g + guides(colour=guide_legend(title=NULL))
@@ -32,6 +33,103 @@ g <- g + theme(axis.text  = element_text(size=18),
                legend.text = element_text(size=18))
 g
 ggsave(filename='Z:/DOCUMENTOS/Informes/ecdf_scenario.png', plot=g, width=10, height=8, units='in')
+
+library(cowplot)
+
+# Histogram - scenario 1
+g1 <- ggplot(data=scenarios[scenarios$scenario=='Escenario 1',], aes(x=peso_racimo, y=..density..)) + geom_histogram(colour='darkgray')
+g1 <- g1 + xlab('Peso del racimo (kg)') + ylab('Densidad')
+g1 <- g1 + theme_bw()
+g1 <- g1 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g1
+
+sc1 <- read.csv('Z:/DATOS_PROCESADOS/_cosecha/_banasan/banasan_cosechas_suelo_foliar_clima_cycle_corrected.csv')
+sc1$fechaCosecha <- as.Date(sc1$fechaCosecha, '%m/%d/%Y')
+g2 <- ggplot(data=sc1[sc1$Peso_racimo>0,], aes(x=fechaCosecha, y=Peso_racimo)) + geom_point()
+g2 <- g2 + xlab('Fecha de cosecha') + ylab('Peso del racimo (kg)')
+g2 <- g2 + theme_bw()
+g2 <- g2 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g2
+
+# ggsave(filename='Z:/DOCUMENTOS/Informes/histogram_scenario3.png', plot=g, width=8, height=8, units='in')
+
+gcombine <- plot_grid(g1, g2) # labels=c("A", "B")
+ggsave(filename='Z:/DOCUMENTOS/Informes/timeserie_scenario1.png', plot=gcombine, width=16, height=8, units='in')
+
+# Histogram - scenario 2
+g1 <- ggplot(data=scenarios[scenarios$scenario=='Escenario 2',], aes(x=peso_racimo, y=..density..)) + geom_histogram(colour='darkgray')
+g1 <- g1 + xlab('Peso del racimo (kg)') + ylab('Densidad')
+g1 <- g1 + theme_bw()
+g1 <- g1 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g1
+
+sc2 <- read.csv('Z:/DATOS_PROCESADOS/_cosecha/_cobana/cobana_cosechas_fertilizaciones_clima_cycle.csv')
+sc2$fechaCosecha <- as.Date(sc2$fechaCosecha)
+g2 <- ggplot(data=sc2[sc2$Peso_racimo>0,], aes(x=fechaCosecha, y=Peso_racimo, colour=)) + geom_point()
+g2 <- g2 + xlab('Fecha de cosecha') + ylab('Peso del racimo (kg)')
+g2 <- g2 + theme_bw()
+g2 <- g2 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g2
+
+# ggsave(filename='Z:/DOCUMENTOS/Informes/histogram_scenario3.png', plot=g, width=8, height=8, units='in')
+
+gcombine <- plot_grid(g1, g2) # labels=c("A", "B")
+ggsave(filename='Z:/DOCUMENTOS/Informes/timeserie_scenario2.png', plot=gcombine, width=16, height=8, units='in')
+
+library(cowplot)
+
+# Histogram - scenario 3
+g1 <- ggplot(data=scenarios[scenarios$scenario=='Escenario 3',], aes(x=peso_racimo, y=..density..)) + geom_histogram(colour='darkgray')
+g1 <- g1 + xlab('Peso del racimo (kg)') + ylab('Densidad')
+g1 <- g1 + theme_bw()
+g1 <- g1 + theme(axis.text  = element_text(size=18),
+               axis.title = element_text(size=20, face="bold"))
+g1
+
+sc3 <- read.csv('Z:/DATOS_PROCESADOS/_cosecha/all_clima_cycle.csv')
+sc3$fechaCosecha <- as.Date(sc3$fechaCosecha)
+g2 <- ggplot(data=sc3[sc3$Peso_racimo>0,], aes(x=fechaCosecha, y=Peso_racimo)) + geom_point()
+g2 <- g2 + xlab('Fecha de cosecha') + ylab('Peso del racimo (kg)')
+g2 <- g2 + theme_bw()
+g2 <- g2 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g2
+
+# ggsave(filename='Z:/DOCUMENTOS/Informes/histogram_scenario3.png', plot=g, width=8, height=8, units='in')
+
+gcombine <- plot_grid(g1, g2) # labels=c("A", "B")
+ggsave(filename='Z:/DOCUMENTOS/Informes/timeserie_scenario3.png', plot=gcombine, width=16, height=8, units='in')
+
+# Merma
+merma_data <- read.csv('Z:/DATOS_PROCESADOS/_merma/all_merma_clima_cycle.csv')
+
+# Histogram - scenario merma
+
+library(cowplot)
+
+g1 <- ggplot(data=merma_data[merma_data$Merma>0,], aes(x=Merma, y=..density..)) + geom_histogram(colour='darkgray')
+g1 <- g1 + xlab('Merma') + ylab('Densidad')
+g1 <- g1 + theme_bw()
+g1 <- g1 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g1
+#ggsave(filename='Z:/DOCUMENTOS/Informes/histogram_merma.png', plot=g1, width=8, height=8, units='in')
+
+merma_data$fechaCosecha <- as.Date(merma_data$fechaCosecha)
+g2 <- ggplot(data=merma_data[merma_data$Merma>0,], aes(x=fechaCosecha, y=Merma)) + geom_point()
+g2 <- g2 + xlab('Fecha de cosecha') + ylab('Merma')
+g2 <- g2 + theme_bw()
+g2 <- g2 + theme(axis.text  = element_text(size=18),
+                 axis.title = element_text(size=20, face="bold"))
+g2
+#ggsave(filename='Z:/DOCUMENTOS/Informes/timeserie_merma.png', plot=g2, width=8, height=8, units='in')
+
+gcombine <- plot_grid(g1, g2) # labels=c("A", "B")
+ggsave(filename='Z:/DOCUMENTOS/Informes/timeserie_merma.png', plot=gcombine, width=16, height=8, units='in')
 
 # g <- ggplot(data=scenarios, aes(x=peso_racimo, colour=scenario)) + geom_density()
 # g <- g + xlab('Peso del racimo (kg)') + ylab('Densidad acumulada')
